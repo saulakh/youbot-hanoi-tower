@@ -22,6 +22,13 @@ public class Main {
         double[] updatedChassis = NextState.odometry(chassisConfig, deltaT);
         System.out.println("\nOdometry: " + Arrays.toString(updatedChassis));
 
+        // Testing limitSpeeds method in NextState
+        controls[7] = -50;
+        controls[8] = 50;
+        System.out.println("\nLimit Speeds\nBefore method: " + Arrays.toString(controls));
+        NextState.limitSpeeds(controls, youBot.MAX_SPEED);
+        System.out.println("After method: " + Arrays.toString(controls));
+
     }
 
 }

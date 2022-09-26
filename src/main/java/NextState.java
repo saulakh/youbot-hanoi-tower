@@ -1,5 +1,7 @@
 import matrix.Matrix;
 
+import java.util.Arrays;
+
 public class NextState {
 
     public static double[] eulerStep(double[] angles, double[] controls, double dT) {
@@ -65,6 +67,16 @@ public class NextState {
         return chassisConfig;
     }
 
+    public static void limitSpeeds(double[] controls, double maxSpeed) {
+        for (int i=0; i < controls.length; i++) {
+            if (controls[i] > maxSpeed) {
+                controls[i] = maxSpeed;
+            } else if (controls[i] < -maxSpeed) {
+                controls[i] = -maxSpeed;
+            }
+        }
+    }
+
     public static double[] nextState(double[] currentConfig, double[] controls, double dT, double maxSpeed) {
         /*
          Inputs:
@@ -75,6 +87,12 @@ public class NextState {
          Output:
          - currentConfig: 12-vector representing the configuration of the robot time Δt later
          */
+        double[] newState = new double[12];
+        double[] chassisConfig = Matrix.rangeFromArray(currentConfig, 0, 3);
+        double[] angles = Matrix.rangeFromArray(currentConfig, 3, 12);
+
+        limitSpeeds(controls, maxSpeed);
+
         return currentConfig;
     }
 

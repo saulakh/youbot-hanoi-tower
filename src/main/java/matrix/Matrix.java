@@ -26,8 +26,22 @@ public class Matrix {
         for (int row=0; row < matrixOne.length; row++) {
             for (int col=0; col < matrixTwo[0].length; col++) {
                 for (int index=0; index < innerDimension; index++) {
-                    matrixOutput[row][col] += matrixOne[row][index] * matrixTwo[index][col]; // FINISH THIS
+                    matrixOutput[row][col] += matrixOne[row][index] * matrixTwo[index][col];
                 }
+            }
+        }
+        return matrixOutput;
+    }
+
+    public static double[][] matrixAddition(double[][] matrixOne, double[][] matrixTwo) {
+        if (matrixOne.length != matrixTwo.length || matrixOne[0].length != matrixTwo[0].length) {
+            System.out.println("Matrix Addition Error: Dimensions do not match.");
+            return null;
+        }
+        double[][] matrixOutput = new double[matrixOne.length][matrixOne[0].length];
+        for (int row=0; row < matrixOne.length; row++) {
+            for (int col=0; col < matrixOne[0].length; col++) {
+                matrixOutput[row][col] = matrixOne[row][col] + matrixTwo[row][col];
             }
         }
         return matrixOutput;

@@ -9,25 +9,11 @@ public class Main {
         YouBot youBot = new YouBot();
         NextState nextState;
 
-        // Testing eulerStep method in NextState
-        double[] config = youBot.currentConfig;
-        double[] angles = Matrix.rangeFromArray(config, 3, 12);
+        // Testing nextState method
         double[] controls = new double[] {0.5,0.5,0.5,0.5,0.5,10,10,10,10};
-
-        System.out.println("\nEuler Step: " + Arrays.toString(NextState.eulerStep(angles, controls, youBot.DELTA_T)));
-
-        // Testing odometry method in NextState
-        double[] chassisConfig = Arrays.copyOfRange(config,0,3);
-        double[] deltaT = new double[] {1,1,1,1};
-        double[] updatedChassis = NextState.odometry(chassisConfig, deltaT);
-        System.out.println("\nOdometry: " + Arrays.toString(updatedChassis));
-
-        // Testing limitSpeeds method in NextState
-        controls[7] = -50;
-        controls[8] = 50;
-        System.out.println("\nLimit Speeds\nBefore method: " + Arrays.toString(controls));
-        NextState.limitSpeeds(controls, youBot.MAX_SPEED);
-        System.out.println("After method: " + Arrays.toString(controls));
+        double[] nextConfig = NextState.nextState(youBot.currentConfig, controls, youBot.DELTA_T, youBot.MAX_SPEED);
+        System.out.println("\nCurrent Config: " + Arrays.toString(youBot.currentConfig));
+        System.out.println("\nNext Config: " + Arrays.toString(nextConfig));
 
     }
 

@@ -87,13 +87,20 @@ public class NextState {
          Output:
          - currentConfig: 12-vector representing the configuration of the robot time Δt later
          */
-        double[] newState = new double[12];
+        double[] newState = new double[13];
         double[] chassisConfig = Matrix.rangeFromArray(currentConfig, 0, 3);
         double[] angles = Matrix.rangeFromArray(currentConfig, 3, 12);
 
         limitSpeeds(controls, maxSpeed);
+        double[] dTheta = Matrix.scalarArrayMultiplication(Arrays.copyOfRange(angles, 5, 9), dT);
 
-        return currentConfig;
+        // Update configuration with odometry and eulerStep
+        double[] newChassisConfig = odometry(chassisConfig, dTheta);
+        double[] newAngles = eulerStep(angles, controls, dT);
+        Matrix.replaceRangeFromArray(newChassisConfig, newState, 0);
+        Matrix.replaceRangeFromArray(newAngles, newState, 3);
+
+        return newState;
     }
 
 }

@@ -69,6 +69,21 @@ public class Matrix {
         return matrix;
     }
 
+    public static double[] scalarArrayMultiplication(double[] array, double scalarValue) {
+        for (int i=0; i < array.length; i++) {
+            array[i] *= scalarValue;
+        }
+        return array;
+    }
+
+    public static void replaceRangeFromArray(double[] sourceArray, double[] destArray, int destStartPos) {
+        if (destStartPos + sourceArray.length > destArray.length) {
+            System.out.println("Out of Range Error: Cannot replace range of values.");
+        } else {
+            System.arraycopy(sourceArray, 0, destArray, destStartPos, sourceArray.length);
+        }
+    }
+
     public static double[] rangeFromArray(double[] array, int rangeStart, int rangeEnd) {
         double[] outputArray = new double[rangeEnd - rangeStart];
         int currentIndex = 0;

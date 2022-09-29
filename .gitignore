@@ -1,5 +1,4 @@
-target/
-*/classes/
+target/classes/*
 
 # Intellij
 .idea/

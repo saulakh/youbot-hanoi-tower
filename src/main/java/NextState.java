@@ -92,7 +92,7 @@ public class NextState {
         double[] angles = Matrix.rangeFromArray(currentConfig, 3, 12);
 
         limitSpeeds(controls, maxSpeed);
-        double[] dTheta = Matrix.scalarArrayMultiplication(Arrays.copyOfRange(angles, 5, 9), dT);
+        double[] dTheta = Matrix.scalarArrayMultiplication(Arrays.copyOfRange(controls, 5, 9), dT);
 
         // Update configuration with odometry and eulerStep
         double[] newChassisConfig = odometry(chassisConfig, dTheta);

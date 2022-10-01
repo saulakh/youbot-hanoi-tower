@@ -47,6 +47,16 @@ public class Matrix {
         return matrixOutput;
     }
 
+    public static void replaceRangeFromMatrix(double[][] sourceMatrix, double[][] destMatrix, int destRowStart, int destColStart) {
+        if (destRowStart + sourceMatrix.length > destMatrix.length || destColStart + sourceMatrix[0].length > destMatrix[0].length) {
+            System.out.println("Out of Range Error: Cannot replace range of values.");
+        } else {
+            for (int row=0; row < sourceMatrix.length; row++) {
+                System.arraycopy(sourceMatrix[row], 0, destMatrix[destRowStart + row], destColStart, sourceMatrix[0].length);
+            }
+        }
+    }
+
     public static double[] flattenedMatrix(double[][] fullMatrix) {
         int totalNumberOfValues = fullMatrix.length * fullMatrix[0].length;
         double[] flattenedOutput = new double[totalNumberOfValues];

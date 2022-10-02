@@ -1,12 +1,27 @@
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.util.Arrays;
+import java.util.Scanner;
 
 public class CSV {
 
-    public void writeToCSV(String filePath) throws IOException {
-        File file = new File(filePath);
-        FileWriter outputFile = new FileWriter(file);
-        //CSVWriter writer = new CSVWriter(outputFile);
+    public static void writeToCSV(String filePath, double[] config) {
+        try (PrintWriter csvWriter = new PrintWriter(new FileOutputStream(filePath, true))) {
+            csvWriter.println(Arrays.toString(config).replace("[", "").replace("]",""));
+        } catch (FileNotFoundException e) {
+            System.out.println("Cannot open or write to file.");
+        }
+    }
+
+    public static void readFromCSV(String filePath) {
+        File csvFile = new File(filePath);
+        try(Scanner csvReader = new Scanner(csvFile)) {
+            while (csvReader.hasNextLine()) {
+                String currentConfig = csvReader.nextLine();
+                String[] configArray = currentConfig.split(",");
+            }
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("Cannot open or read file.");
+        }
     }
 }

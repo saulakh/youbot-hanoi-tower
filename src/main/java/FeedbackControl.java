@@ -24,19 +24,20 @@ public class FeedbackControl {
         return fullJacobian;
     }
 
-    public static List<Double> testJointLimits(double[] currentConfig) {
+    public static List<Integer> testJointLimits(double[] currentConfig, double jointMax) {
         /*
         Returns a list of joint angles that exceed joint limits
          */
-        List<Double> constrainJoints = new ArrayList<>();
+        List<Integer> constrainJoints = new ArrayList<>();
+        double theta3 = currentConfig[5];
+        double theta4 = currentConfig[6];
+        if (theta3 < -jointMax || theta3 > jointMax) {
+            constrainJoints.add(3);
+        }
+        if (theta4 < -jointMax || theta4 > jointMax) {
+            constrainJoints.add(4);
+        }
         return constrainJoints;
-    }
-
-    public static double[][] pseudoInvTol(double[][] matrix, double tolerance) {
-        /*
-        Replaces any values greater than the tolerance with the tolerance, and returns the pseudo inverse of the matrix
-         */
-        return matrix;
     }
 
     public static double[] feedbackControl(double[][] X, double[][] Xd, double[][] XdNext, double[][] KpMatrix, double[][] KiMatrix, double dT, double[] currentConfig, double[] errorIntegral) {

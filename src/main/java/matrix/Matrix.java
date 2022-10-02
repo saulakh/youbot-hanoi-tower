@@ -70,6 +70,13 @@ public class Matrix {
         return flattenedOutput;
     }
 
+    public static double[][] pseudoInvTol(double[][] matrix, double tolerance) { // FINISH THIS
+        /*
+        Replaces any values greater than the tolerance with the tolerance, and returns the pseudo inverse of the matrix
+         */
+        return matrix;
+    }
+
     public static double[][] scalarMultiplication(double[][] matrix, double scalarValue) {
         for (int row=0; row < matrix.length; row++) {
             for (int col=0; col < matrix[0].length; col++) {

@@ -26,7 +26,7 @@ public class YouBot {
 
     // Starting configuration and controls
     double[] currentConfig = initialConfig;
-    double[] currentControls = new double[13];
+    double[] currentControls = new double[9]; // 5 joint speeds, 4 wheel speeds (rad/s)
 
     // Initial and goal configurations of cube
     double[][] cubeInitial = new double[][] {{1,0,0,1},{0,1,0,0},{0,0,1,0.025},{0,0,0,1}};

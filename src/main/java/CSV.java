@@ -12,16 +12,27 @@ public class CSV {
         }
     }
 
-    public static void readFromCSV(String filePath) {
+    public static double[] readFromCSV(String filePath) {
         File csvFile = new File(filePath);
+        double[] configArray = null;
         try(Scanner csvReader = new Scanner(csvFile)) {
             while (csvReader.hasNextLine()) {
                 String currentConfig = csvReader.nextLine();
-                String[] configArray = currentConfig.split(",");
+                String[] configStrings = currentConfig.split(",");
+                configArray = convertStringToDoubleArray(configStrings);
             }
         }
         catch (FileNotFoundException e) {
             System.out.println("Cannot open or read file.");
         }
+        return configArray;
+    }
+
+    public static double[] convertStringToDoubleArray(String[] stringArray) {
+        double[] doubleArray = new double[stringArray.length];
+        for (int i=0; i < stringArray.length; i++) {
+            doubleArray[i] = Double.parseDouble(stringArray[i]);
+        }
+        return doubleArray;
     }
 }

@@ -2,16 +2,17 @@ import matrix.Matrix;
 
 public class TrajectoryGeneration {
 
-    public void getTrajectory(double[] xStart, double[] xEnd, int gripState, int Tf) {
+    public void getTrajectory(double[][] xStart, double[][] xEnd, int gripState, int Tf) {
         /*
          Inputs:
-         - xStart: Starting end-effector configuration
-         - xEnd: Goal end-effector configuration
+         - xStart: Starting end-effector Se3 configuration
+         - xEnd: Goal end-effector Se3 configuration
          - gripState: Gripper state for this section of trajectory
          - Tf: total time of motion for this section (in seconds)
          Output:
-         - configSe3: returns trajectory and appends values to csv file
+         - Appends flattened trajectory to csv file
          */
+        // TODO: Add trajectory method, and append path to CSV
     }
 
     public double[][] graspPosition(double[][] cubeConfig, double theta) {
@@ -74,5 +75,39 @@ public class TrajectoryGeneration {
         Ouput:
         - Appends full trajectory to csv file, moving the cube from inital to goal position
          */
+        int gripState = 0;
+        int gripperTime = 1;
+        int lowerToGraspTime = 1;
+        int moveToPositionTime = 5;
+
+        // 1) Move gripper to standoff configuration over initial cube location
+        double[][] standoffInitial = standoffPosition(cubeInitial, 3*Math.PI/4, 0.075);
+        getTrajectory(robotInitial, standoffInitial, gripState, moveToPositionTime);
+
+        // 2) Move gripper down to initial grasp position
+        double[][] graspInitial = graspPosition(cubeInitial, 3*Math.PI/4);
+        getTrajectory(standoffInitial, graspInitial, gripState, lowerToGraspTime);
+
+        // 3) Close gripper
+        gripState = 1;
+        getTrajectory(graspInitial, graspInitial, gripState, gripperTime);
+
+        // 4) Move gripper back up to initial standoff configuration
+        getTrajectory(graspInitial, standoffInitial, gripState, lowerToGraspTime);
+
+        // 5) Move gripper to standoff configuration over goal cube location
+        double[][] standoffFinal = standoffPosition(cubeFinal, 3*Math.PI/4, 0.075);
+        getTrajectory(standoffInitial, standoffFinal, gripState, moveToPositionTime);
+
+        // 6) Move gripper down to final grasp position
+        double[][] graspFinal = graspPosition(cubeFinal, 3*Math.PI/4);
+        getTrajectory(standoffFinal, graspFinal, gripState, lowerToGraspTime);
+
+        // 7) Open Gripper
+        gripState = 0;
+        getTrajectory(graspFinal, graspFinal, gripState, gripperTime);
+
+        // 8) Move gripper back to final standoff configuration
+        getTrajectory(graspFinal, standoffFinal, gripState, lowerToGraspTime);
     }
 }

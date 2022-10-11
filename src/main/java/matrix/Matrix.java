@@ -70,7 +70,74 @@ public class Matrix {
         return flattenedOutput;
     }
 
-    public static double[][] pseudoInvTol(double[][] matrix, double tolerance) { // FINISH THIS
+    public static double matrixDeterminant(double[][] matrix) {
+        double determinant = 0;
+        int dimension = matrix.length;
+        if (matrix.length != matrix[0].length) {
+            System.out.println("Error: Determinant is undefined for a non-square matrix.");
+            return determinant;
+        }
+        if (dimension == 1) {
+            determinant = matrix[0][0];
+        }
+        else if (dimension == 2) {
+            determinant = (matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0]);
+        } else {
+            for (int col=0; col < dimension; col++) {
+                double value = Math.pow(-1, (1 + col+1)) * matrix[0][col];
+                determinant += value * matrixDeterminant(subMatrix(matrix, 0, col));
+            }
+        }
+        return determinant;
+    }
+
+    public static double[][] subMatrix(double[][] matrix, int row, int col) {
+        /*
+        M_ij is a submatrix obtained by removing row i and column j from the matrix
+         */
+        int dimension = matrix.length;
+        double[][] submatrix = new double[dimension-1][dimension-1];
+        // TODO: Try to simplify this
+        for (int i=0; i < submatrix.length; i++) {
+            for (int j=0; j < submatrix.length; j++) {
+                if (i >= row & j < col) {
+                    submatrix[i][j] = matrix[i+1][j];
+                } else if (j >= col & i < row) {
+                    submatrix[i][j] = matrix[i][j+1];
+                } else if (i >= row & j >= col) {
+                    submatrix[i][j] = matrix[i+1][j+1];
+                } else {
+                    submatrix[i][j] = matrix[i][j];
+                }
+            }
+        }
+        return submatrix;
+    }
+
+    public static double[][] adjugateMatrix(double[][] matrix) {
+        /*
+        The adjugate matrix is defined by A_ij = (-1) ^ (i + j) * det(M_ij)
+         */
+        double[][] adjugate = new double[matrix.length][matrix.length];
+        for (int i=0; i < matrix.length; i++) {
+            for (int j=0; j < matrix[0].length; j++) {
+                adjugate[i][j] = Math.pow(-1, (i + j)) * matrixDeterminant(subMatrix(matrix, i, j));
+            }
+        }
+        return adjugate;
+    }
+
+    public static double[][] inverseMatrix(double[][] matrix) {
+        return scalarMultiplication(adjugateMatrix(matrix), 1 / matrixDeterminant(matrix));
+    }
+
+    public static double[][] pseudoInverse(double[][] matrix) {
+        // TODO: Finish pseduoinverse
+        return matrix;
+    }
+
+    public static double[][] pseudoInvTol(double[][] matrix, double tolerance) {
+        // TODO: Finish pinvTol
         /*
         Replaces any values greater than the tolerance with the tolerance, and returns the pseudo inverse of the matrix
          */

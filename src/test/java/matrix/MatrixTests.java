@@ -43,8 +43,9 @@ public class MatrixTests {
 
     @Test
     public void check4x4Inverse() {
-        double[][] testMatrix = new double[][] {{1,0,0,1},{0,1,0,0},{0,0,1,0.025},{0,0,0,1}};
-        double[][] expected = new double[][] {{1,0,0,-1},{0,1,0,0},{0,0,1,-0.025},{0,0,0,1}};
+        double[][] testMatrix = new double[][] {{1,1,1,-1},{1,1,-1,1},{1,-1,1,1},{-1,1,1,1}};
+        double[][] expected = new double[][] {{0.25,0.25,0.25,-0.25},{0.25,0.25,-0.25,0.25},{0.25,-0.25,0.25,0.25},{-0.25,0.25,0.25,0.25}};
         double[][] actual = Matrix.inverseMatrix(testMatrix);
+        Assert.assertArrayEquals(expected, actual);
     }
 }

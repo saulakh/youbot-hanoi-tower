@@ -84,7 +84,7 @@ public class Matrix {
             determinant = (matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0]);
         } else {
             for (int col=0; col < dimension; col++) {
-                double value = Math.pow(-1, (1 + col+1)) * matrix[0][col];
+                double value = Math.pow(-1, col) * matrix[0][col];
                 determinant += value * matrixDeterminant(subMatrix(matrix, 0, col));
             }
         }
@@ -118,13 +118,14 @@ public class Matrix {
         /*
         The adjugate matrix is defined by A_ij = (-1) ^ (i + j) * det(M_ij)
          */
-        double[][] adjugate = new double[matrix.length][matrix.length];
+        double[][] cofactor = new double[matrix.length][matrix.length];
         for (int i=0; i < matrix.length; i++) {
             for (int j=0; j < matrix[0].length; j++) {
-                adjugate[i][j] = Math.pow(-1, (i + j)) * matrixDeterminant(subMatrix(matrix, i, j));
+                cofactor[i][j] = Math.pow(-1, (i + j)) * matrixDeterminant(subMatrix(matrix, i, j));
             }
         }
-        return adjugate;
+        // Adjugate matrix is the transpose of the cofactor matrix
+        return transposeMatrix(cofactor);
     }
 
     public static double[][] inverseMatrix(double[][] matrix) {

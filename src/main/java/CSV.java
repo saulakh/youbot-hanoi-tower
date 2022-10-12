@@ -4,6 +4,14 @@ import java.util.Scanner;
 
 public class CSV {
 
+    public static void clearCSVFile(String filePath) {
+        try (PrintWriter csvWriter = new PrintWriter(filePath)) {
+            csvWriter.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("Cannot clear file contents.");
+        }
+    }
+
     public static void writeToCSV(String filePath, double[] config) {
         try (PrintWriter csvWriter = new PrintWriter(new FileOutputStream(filePath, true))) {
             csvWriter.println(Arrays.toString(config).replace("[", "").replace("]",""));

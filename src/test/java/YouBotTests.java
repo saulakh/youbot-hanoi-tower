@@ -35,4 +35,60 @@ public class YouBotTests {
         double[][][] actual = robot.screwTrajectory(xStart, xEnd, Tf, N, method);
         Assert.assertArrayEquals(expected, actual);
     }
+
+    @Test
+    public void checkAdjointMatrix() {
+        double[][] inputMatrix = new double[][] {{1,0,0,0},{0,0,-1,0},{0,1,0,3},{0,0,0,1}};
+        double[][] expected = new double[][] {{1,0,0,0,0,0},{0,0,-1,0,0,0},{0,1,0,0,0,0},{0,0,3,1,0,0},{3,0,0,0,0,-1},{0,0,0,0,1,0}};
+        double[][] actual = robot.adjointMatrix(inputMatrix);
+        Assert.assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void checkMatrixExp6() {
+        double[][] inputMatrix = new double[][] {{0,0,0,0},{0,0,-1.57079632,2.35619449},{0,1.57079632,0,2.35619449},{0,0,0,0}};
+        double[][] expected = new double[][] {{1,0,0,0},{0,0,-1,0},{0,1,0,3},{0,0,0,1}};
+        double[][] actual = robot.matrixExp6(inputMatrix);
+        Assert.assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void checkMatrixLog6() {
+        double[][] inputMatrix = new double[][] {{1,0,0,0},{0,0,-1,0},{0,1,0,3},{0,0,0,1}};
+        double[][] expected = new double[][] {{0,0,0,0},{0,0,-1.57079632,2.35619449},{0,1.57079632,0,2.35619449},{0,0,0,0}};
+        double[][] actual = robot.matrixLog6(inputMatrix);
+        Assert.assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void checkTransToRot() {
+        double[][] inputMatrix = new double[][] {{1,0,0,0},{0,0,-1,0},{0,1,0,3},{0,0,0,1}};
+        double[][] expected = new double[][] {{1,0,0},{0,0,-1},{0,1,0}};
+        double[][] actual = robot.transToRot(inputMatrix);
+        Assert.assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void checkTransToPos() {
+        double[][] inputMatrix = new double[][] {{1,0,0,0},{0,0,-1,0},{0,1,0,3},{0,0,0,1}};
+        double[][] expected = new double[][] {{0,0,3}};
+        double[][] actual = robot.transToPos(inputMatrix);
+        Assert.assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void checkTransInv() {
+        double[][] inputMatrix = new double[][] {{1,0,0,0},{0,0,-1,0},{0,1,0,3},{0,0,0,1}};
+        double[][] expected = new double[][] {{1,0,0,0},{0,0,1,-3},{0,-1,0,0},{0,0,0,1}};
+        double[][] actual = robot.transInv(inputMatrix);
+        Assert.assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void checkVecToSo3() {
+        double[][] inputMatrix = new double[][] {{1,2,3}};
+        double[][] expected = new double[][] {{0,-3,2},{3,0,-1},{-2,1,0}};
+        double[][] actual = robot.vecToSo3(inputMatrix);
+        Assert.assertArrayEquals(expected, actual);
+    }
 }

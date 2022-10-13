@@ -91,4 +91,91 @@ public class YouBot {
         return trajectory;
     }
 
+    public double[][] adjointMatrix(double[][] T) {
+        /*
+        Computes the adjoint representation of a homogenous transformation matrix
+        - T: A homogenous transformation matrix
+        Output:
+        - Returns the 6x6 adjoint representation [AdT] of T
+         */
+        double[][] adjoint = new double[6][6];
+        double[][] rot = transToRot(T);
+        double[][] skewPos = vecToSo3(transToPos(T));
+        double[][] pR = Matrix.matrixMultiplication(skewPos, rot);
+        assert pR != null;
+        Matrix.replaceRangeFromMatrix(rot, adjoint, 0, 0);
+        Matrix.replaceRangeFromMatrix(rot, adjoint, 3, 3);
+        Matrix.replaceRangeFromMatrix(pR, adjoint, 3, 0);
+        return adjoint;
+    }
+
+    public double[][] matrixExp6(double[][] se3Matrix) {
+        /*
+        Computes the matrix exponential of an SE(3) representation of exponential coordinates
+        - se3Matrix: A matrix in SE(3) representation
+        Output:
+        - Returns the matrix exponential of se3Matrix
+         */
+        // TODO: Finish MatrixExp6 method
+
+        return se3Matrix;
+    }
+
+    public double[][] matrixLog6(double[][] se3Matrix) {
+        /*
+        Computes the matrix logarithm of a homogenous transformation matrix
+        - se3Matrix: A matrix in SE(3) representation
+        Output:
+        - Returns the matrix logarithm of transformationMatrix
+         */
+        // TODO: Finish MatrixLog6 method
+        return se3Matrix;
+    }
+
+    public double[][] transToRot(double[][] se3Matrix) {
+        double[][] rotMatrix = new double[3][3];
+        for (int i=0; i < rotMatrix.length; i++) {
+            System.arraycopy(se3Matrix[i], 0, rotMatrix[i], 0, rotMatrix[0].length);
+        }
+        return rotMatrix;
+    }
+
+    public double[][] transToPos(double[][] se3Matrix) {
+        double[][] posMatrix = new double[1][3];
+        for (int i=0; i < posMatrix[0].length; i++) {
+            posMatrix[0][i] = se3Matrix[i][3];
+        }
+        return posMatrix;
+    }
+
+    public double[][] transInv(double[][] matrix) {
+        /*
+        Inverts a homogenous transformation matrix
+        - matrix: A homogenous transformation matrix
+        Output:
+        - Returns the inverse of the input matrix
+        Uses the structure of transformation matrices to avoid taking a matrix inverse, for efficiency
+         */
+        // TODO: Finish transInv method
+        double[][] transInv = new double[matrix.length][matrix[0].length];
+        return transInv;
+    }
+
+    public double[][] vecToSo3(double[][] vector3x1) {
+        /*
+        Converts a 3-vector to so(3) representation
+        - vector3x1: a 3-vector
+        Output:
+        - Returns the skew-symmetric representation of the input vector
+         */
+        double[][] so3 = new double[3][3];
+        so3[0][1] = - vector3x1[0][2];
+        so3[0][2] = vector3x1[0][1];
+        so3[1][0] = vector3x1[0][2];
+        so3[1][2] = - vector3x1[0][0];
+        so3[2][0] = - vector3x1[0][1];
+        so3[2][1] = vector3x1[0][0];
+        return so3;
+    }
+
 }

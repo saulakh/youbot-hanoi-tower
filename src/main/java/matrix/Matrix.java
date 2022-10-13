@@ -70,6 +70,11 @@ public class Matrix {
         return flattenedOutput;
     }
 
+    public static double[][] dotProduct(double[][] matrixOne, double[][] matrixTwo) {
+        // TODO: finish dot product method
+        return new double[matrixOne.length][matrixTwo[0].length];
+    }
+
     public static double matrixDeterminant(double[][] matrix) {
         double determinant = 0;
         int dimension = matrix.length;
@@ -97,7 +102,6 @@ public class Matrix {
          */
         int dimension = matrix.length;
         double[][] submatrix = new double[dimension-1][dimension-1];
-        // TODO: Try to simplify this
         for (int i=0; i < submatrix.length; i++) {
             for (int j=0; j < submatrix.length; j++) {
                 if (i >= row & j < col) {

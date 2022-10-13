@@ -43,4 +43,52 @@ public class YouBot {
     double[][] Xd = new double[][] {{0,0,1,0.5},{0,1,0,0},{-1,0,0,0.5},{0,0,0,1}}; // current reference end-effector config
     double[][] XdNext = new double[][] {{0,0,1,0.6},{0,1,0,0},{-1,0,0,0.3},{0,0,0,1}}; // end-effector reference config at the next timestep
 
+    public double cubicTimeScaling(int Tf, double t) {
+        /*
+        Computes s(t) for a cubic time scaling
+        - Tf: Total time of the motion in seconds from rest to rest
+        - t: The current time t satisfying 0 < t < Tf
+        Output:
+        - The path parameter s(t) corresponding to a third-order polynomial motion that begins and ends at zero velocity
+         */
+        return 3 * Math.pow(t / Tf, 2) - 2 * Math.pow(t / Tf, 3);
+    }
+
+    public double quinticTimeScaling(int Tf, double t) {
+        /*
+        Computes s(t) for a quintic time scaling
+        - Tf: Total time of the motion in seconds from rest to rest
+        - t: The current time t satisfying 0 < t < Tf
+        Output:
+        - The path parameter s(t) corresponding to a fifth-order polynomial motion that begins and ends at zero velocity and zero acceleration
+         */
+        return 10 * Math.pow(t / Tf, 3) - 15 * Math.pow(t / Tf, 4) + 6 * Math.pow(t / Tf, 5);
+    }
+
+    public double[][][] screwTrajectory(double[][] xStart, double[][] xEnd, int Tf, int N, int method) {
+        /*
+        Computes a trajectory as a list of N SE(3) matrices corresponding to the screw motion about a space screw axis
+        - xStart: The initial end-effector configuration
+        - xEnd: The final end-effector configuration
+        - Tf: Total time of the motion in seconds from rest
+        - N: The number of points N > 1 (Start and stop) in the discrete representation of the trajectory
+        - method: The time-scaling method, where 3 indicates cubic (third-order polynomial) time scaling, and 5 indicates quintic (fifth-order polynomial) time scaling
+        Output:
+        - Returns the discretized trajectory as a list of N matrices in SE(3) separated in time by Tf/(N-1). The first in the list is xStart and the Nth is xEnd.
+         */
+        double timeGap = Tf / (N - 1.0);
+        double[][][] trajectory = new double[4][4][N];
+        double s;
+
+        for (int i=0; i < N; i++) {
+            if (method == 3) {
+                s = cubicTimeScaling(Tf, timeGap * i);
+            } else {
+                s = quinticTimeScaling(Tf, timeGap * i);
+            }
+            // trajectory[i] = TODO: Create MatrixExp6, MatrixLog6, dotProduct, and TransInv methods to finish this
+        }
+        return trajectory;
+    }
+
 }

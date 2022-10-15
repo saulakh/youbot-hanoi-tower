@@ -1,3 +1,4 @@
+import matrix.Matrix;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -45,6 +46,18 @@ public class YouBotTests {
     }
 
     @Test
+    public void checkMatrixExp3() {
+        double[][] inputMatrix = new double[][] {{0,-3,2},{3,0,-1},{-2,1,0}};
+        double[][] expected = new double[][] {{-0.69492056,0.71352099,0.08929286},{-0.19200697,-0.30378504,0.93319235},{0.69297817,0.6313497,0.34810748}};
+        double[][] actual = robot.matrixExp3(inputMatrix);
+        for (int i=0; i < actual.length; i++) {
+            for (int j=0; j < actual[0].length; j++) {
+                Assert.assertEquals(expected[i][j], actual[i][j], 0.0001);
+            }
+        }
+    }
+
+    @Test
     public void checkMatrixExp6() {
         double[][] inputMatrix = new double[][] {{0,0,0,0},{0,0,-1.57079632,2.35619449},{0,1.57079632,0,2.35619449},{0,0,0,0}};
         double[][] expected = new double[][] {{1,0,0,0},{0,0,-1,0},{0,1,0,3},{0,0,0,1}};
@@ -71,9 +84,9 @@ public class YouBotTests {
     @Test
     public void checkTransToPos() {
         double[][] inputMatrix = new double[][] {{1,0,0,0},{0,0,-1,0},{0,1,0,3},{0,0,0,1}};
-        double[][] expected = new double[][] {{0,0,3}};
-        double[][] actual = robot.transToPos(inputMatrix);
-        Assert.assertArrayEquals(expected, actual);
+        double[] expected = new double[] {0,0,3};
+        double[] actual = robot.transToPos(inputMatrix);
+        Assert.assertArrayEquals(expected, actual, 0.0001);
     }
 
     @Test
@@ -81,14 +94,39 @@ public class YouBotTests {
         double[][] inputMatrix = new double[][] {{1,0,0,0},{0,0,-1,0},{0,1,0,3},{0,0,0,1}};
         double[][] expected = new double[][] {{1,0,0,0},{0,0,1,-3},{0,-1,0,0},{0,0,0,1}};
         double[][] actual = robot.transInv(inputMatrix);
+        Matrix.replaceNegativeZeros(actual);
         Assert.assertArrayEquals(expected, actual);
     }
 
     @Test
     public void checkVecToSo3() {
-        double[][] inputMatrix = new double[][] {{1,2,3}};
+        double[] inputMatrix = new double[] {1,2,3};
         double[][] expected = new double[][] {{0,-3,2},{3,0,-1},{-2,1,0}};
         double[][] actual = robot.vecToSo3(inputMatrix);
         Assert.assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void checkSo3ToVec() {
+        double[][] inputMatrix = new double[][] {{0,-3,2},{3,0,-1},{-2,1,0}};
+        double[] expected = new double[] {1.0,2.0,3.0};
+        double[] actual = robot.so3ToVec(inputMatrix);
+        Assert.assertArrayEquals(expected, actual, 0.0001);
+    }
+
+    @Test
+    public void checkRotToAxis3() {
+        double[] inputVector = new double[] {1,2,3};
+        double[] expected = {0.26726124,0.53452248,0.80178373};
+        double[] actual = robot.rotToAxis3(inputVector);
+        Assert.assertArrayEquals(expected, actual, 0.00001);
+    }
+
+    @Test
+    public void checkRotToAng3() {
+        double[] inputVector = new double[] {1,2,3};
+        double expected = 3.7416573867739413;
+        double actual = robot.rotToAng3(inputVector);
+        Assert.assertEquals(expected, actual, 0.00001);
     }
 }

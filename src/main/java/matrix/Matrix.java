@@ -70,11 +70,6 @@ public class Matrix {
         return flattenedOutput;
     }
 
-    public static double[][] dotProduct(double[][] matrixOne, double[][] matrixTwo) {
-        // TODO: finish dot product method
-        return new double[matrixOne.length][matrixTwo[0].length];
-    }
-
     public static double matrixDeterminant(double[][] matrix) {
         double determinant = 0;
         int dimension = matrix.length;
@@ -202,6 +197,28 @@ public class Matrix {
     public static void printMatrix(double[][] matrix) {
         for (double[] row : matrix) {
             System.out.println(Arrays.toString(row));
+        }
+    }
+
+    public static double[] normalizeVector(double[] vector) {
+        double norm = 0;
+        for (double val : vector) {
+            norm += Math.pow(val, 2);
+        }
+        norm = Math.pow(norm, 0.5);
+        return scalarArrayMultiplication(vector, 1/norm);
+    }
+
+    public static void replaceNegativeZeros(double[][] matrix) {
+        /*
+        Replaces any negative zeros in the matrix with 0.0 for unit tests
+         */
+        for (int i=0; i < matrix.length; i++) {
+            for (int j=0; j < matrix[0].length; j++) {
+                if (matrix[i][j] == -0.0) {
+                    matrix[i][j] = 0.0;
+                }
+            }
         }
     }
 

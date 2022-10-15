@@ -1,5 +1,7 @@
 import matrix.Matrix;
 
+import static matrix.Matrix.scalarArrayMultiplication;
+
 public class YouBot {
 
     /**
@@ -109,16 +111,41 @@ public class YouBot {
         return adjoint;
     }
 
+    public double[][] matrixExp3(double[][] matrix) {
+        /*
+        Computes the matrix exponential of a matrix in so(3)
+        - matrix: A 3x3 skew-symmetric matrix
+        Output:
+        - Returns the matrix exponential of the so(3) matrix
+         */
+        double[][] matrixExp3;
+        double[][] identity = Matrix.identityMatrix(3);
+        double norm = Math.pow(matrix[2][1],2) + Math.pow(matrix[0][2],2) + Math.pow(matrix[1][0],2);
+        norm = Math.pow(norm, 0.5);
+        if (Math.abs(norm) < 0.000001) {
+            return identity;
+        }
+        double theta = rotToAng3(so3ToVec(matrix));
+        double[][] omgMatrix = Matrix.scalarMultiplication(matrix, 1/theta);
+        double[][] omgMatrixSquared = Matrix.matrixMultiplication(omgMatrix, omgMatrix);
+        matrixExp3 = Matrix.matrixAddition(identity, Matrix.scalarMultiplication(omgMatrix, Math.sin(theta)));
+        assert matrixExp3 != null;
+        assert omgMatrixSquared != null;
+        return Matrix.matrixAddition(matrixExp3, Matrix.scalarMultiplication(omgMatrixSquared, (1 - Math.cos(theta))));
+    }
+
     public double[][] matrixExp6(double[][] se3Matrix) {
         /*
         Computes the matrix exponential of an SE(3) representation of exponential coordinates
         - se3Matrix: A matrix in SE(3) representation
         Output:
-        - Returns the matrix exponential of se3Matrix
+        - Returns the matrix exponential of the SE(3) matrix
          */
         // TODO: Finish MatrixExp6 method
+        double[][] matrixExp6 = new double[4][4];
+        double[][] identity = Matrix.identityMatrix(4);
 
-        return se3Matrix;
+        return matrixExp6;
     }
 
     public double[][] matrixLog6(double[][] se3Matrix) {
@@ -126,13 +153,16 @@ public class YouBot {
         Computes the matrix logarithm of a homogenous transformation matrix
         - se3Matrix: A matrix in SE(3) representation
         Output:
-        - Returns the matrix logarithm of transformationMatrix
+        - Returns the matrix logarithm of the SE(3) matrix
          */
         // TODO: Finish MatrixLog6 method
         return se3Matrix;
     }
 
     public double[][] transToRot(double[][] se3Matrix) {
+        /*
+        Extracts the rotation matrix from a transformation matrix
+         */
         double[][] rotMatrix = new double[3][3];
         for (int i=0; i < rotMatrix.length; i++) {
             System.arraycopy(se3Matrix[i], 0, rotMatrix[i], 0, rotMatrix[0].length);
@@ -140,12 +170,15 @@ public class YouBot {
         return rotMatrix;
     }
 
-    public double[][] transToPos(double[][] se3Matrix) {
-        double[][] posMatrix = new double[1][3];
-        for (int i=0; i < posMatrix[0].length; i++) {
-            posMatrix[0][i] = se3Matrix[i][3];
+    public double[] transToPos(double[][] se3Matrix) {
+        /*
+        Extracts the position matrix from the transformation matrix
+         */
+        double[] posVector = new double[3];
+        for (int i=0; i < posVector.length; i++) {
+            posVector[i] = se3Matrix[i][3];
         }
-        return posMatrix;
+        return posVector;
     }
 
     public double[][] transInv(double[][] matrix) {
@@ -156,26 +189,65 @@ public class YouBot {
         - Returns the inverse of the input matrix
         Uses the structure of transformation matrices to avoid taking a matrix inverse, for efficiency
          */
-        // TODO: Finish transInv method
         double[][] transInv = new double[matrix.length][matrix[0].length];
+        double[][] rotTranspose = Matrix.transposeMatrix(transToRot(matrix));
+        double[][] posTranspose = Matrix.transposeArray(transToPos(matrix));
+        Matrix.replaceRangeFromMatrix(rotTranspose, transInv, 0, 0);
+        double[][] rtPos = Matrix.matrixMultiplication(rotTranspose, posTranspose);
+        assert rtPos != null;
+        Matrix.scalarMultiplication(rtPos, -1);
+        transInv[0][3] = rtPos[0][0];
+        transInv[1][3] = rtPos[1][0];
+        transInv[2][3] = rtPos[2][0];
+        transInv[3] = new double[] {0,0,0,1};
         return transInv;
     }
 
-    public double[][] vecToSo3(double[][] vector3x1) {
+    public double[][] vecToSo3(double[] vector) {
         /*
         Converts a 3-vector to so(3) representation
-        - vector3x1: a 3-vector
+        - vector: a 3-vector
         Output:
         - Returns the skew-symmetric representation of the input vector
          */
         double[][] so3 = new double[3][3];
-        so3[0][1] = - vector3x1[0][2];
-        so3[0][2] = vector3x1[0][1];
-        so3[1][0] = vector3x1[0][2];
-        so3[1][2] = - vector3x1[0][0];
-        so3[2][0] = - vector3x1[0][1];
-        so3[2][1] = vector3x1[0][0];
+        so3[0] = new double[] {0, -vector[2], vector[1]};
+        so3[1] = new double[] {vector[2], 0, -vector[0]};
+        so3[2] = new double[] {-vector[1], vector[0], 0};
         return so3;
+    }
+
+    public double[] so3ToVec(double[][] so3Matrix) {
+        /*
+        Converts so(3) representation to a 3-vector
+        - so3Matrix: A 3x3 skew-symmetric matrix
+        Output:
+        - Returns the 3-vector corresponding to the skew-symmetric representation
+         */
+        return new double[] {so3Matrix[2][1], so3Matrix[0][2], so3Matrix[1][0]};
+    }
+
+    public double[] rotToAxis3(double[] vector) {
+        /*
+        Calculates the corresponding axis from a 3-vector of exponential coordinates for rotation
+         */
+        double norm = 0;
+        for (double val : vector) {
+            norm += Math.pow(val, 2);
+        }
+        norm = Math.pow(norm, 0.5);
+        return Matrix.scalarArrayMultiplication(vector, 1/norm);
+    }
+
+    public double rotToAng3(double[] vector) {
+        /*
+        Calculates the corresponding angle from a 3-vector of exponential coordinates for rotation
+         */
+        double norm = 0;
+        for (double val : vector) {
+            norm += Math.pow(val, 2);
+        }
+        return Math.pow(norm, 0.5);
     }
 
 }

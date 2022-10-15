@@ -1,5 +1,6 @@
 import matrix.Matrix;
 
+import static matrix.Matrix.rangeFromMatrix;
 import static matrix.Matrix.scalarArrayMultiplication;
 
 public class YouBot {
@@ -88,7 +89,7 @@ public class YouBot {
             } else {
                 s = quinticTimeScaling(Tf, timeGap * i);
             }
-            // trajectory[i] = TODO: Create MatrixExp6, MatrixLog6, dotProduct, and TransInv methods to finish this
+            // trajectory[i] = TODO: Create MatrixExp6, MatrixLog6 methods to finish this
         }
         return trajectory;
     }
@@ -120,12 +121,10 @@ public class YouBot {
          */
         double[][] matrixExp3;
         double[][] identity = Matrix.identityMatrix(3);
-        double norm = Math.pow(matrix[2][1],2) + Math.pow(matrix[0][2],2) + Math.pow(matrix[1][0],2);
-        norm = Math.pow(norm, 0.5);
-        if (Math.abs(norm) < 0.000001) {
+        double theta = rotToAng3(so3ToVec(matrix));
+        if (Math.abs(theta) < 0.000001) {
             return identity;
         }
-        double theta = rotToAng3(so3ToVec(matrix));
         double[][] omgMatrix = Matrix.scalarMultiplication(matrix, 1/theta);
         double[][] omgMatrixSquared = Matrix.matrixMultiplication(omgMatrix, omgMatrix);
         matrixExp3 = Matrix.matrixAddition(identity, Matrix.scalarMultiplication(omgMatrix, Math.sin(theta)));
@@ -141,10 +140,27 @@ public class YouBot {
         Output:
         - Returns the matrix exponential of the SE(3) matrix
          */
-        // TODO: Finish MatrixExp6 method
         double[][] matrixExp6 = new double[4][4];
-        double[][] identity = Matrix.identityMatrix(4);
+        double[][] rot = rangeFromMatrix(se3Matrix, 0, 3, 0, 3);
+        Matrix.replaceRangeFromMatrix(matrixExp3(rot), matrixExp6, 0, 0);
 
+        double[][] identity = Matrix.identityMatrix(3);
+        double theta = rotToAng3(so3ToVec(rot));
+        double[][] identityTheta = Matrix.scalarMultiplication(identity, theta);
+        double[][] omgMatrix = Matrix.scalarMultiplication(rot, 1/theta);
+        double[][] omgMatrixSquared = Matrix.matrixMultiplication(omgMatrix, omgMatrix);
+
+        double[][] cosOmega = Matrix.scalarMultiplication(omgMatrix, (1 - Math.cos(theta)));
+        assert omgMatrixSquared != null;
+        double[][] sinOmegaSquared = Matrix.scalarMultiplication(omgMatrixSquared, (theta - Math.sin(theta)));
+        double[][] v = Matrix.rangeFromMatrix(se3Matrix,0, 3, 3, 4);
+        v = Matrix.scalarMultiplication(v, 1/theta);
+
+        double[][] sum1 = Matrix.matrixAddition(identityTheta, cosOmega);
+        double[][] sum = Matrix.matrixAddition(sum1, sinOmegaSquared);
+        double[][] product = Matrix.matrixMultiplication(sum, v);
+        Matrix.replaceRangeFromMatrix(product, matrixExp6, 0, 3);
+        matrixExp6[3][3] = 1;
         return matrixExp6;
     }
 
@@ -195,7 +211,7 @@ public class YouBot {
         Matrix.replaceRangeFromMatrix(rotTranspose, transInv, 0, 0);
         double[][] rtPos = Matrix.matrixMultiplication(rotTranspose, posTranspose);
         assert rtPos != null;
-        Matrix.scalarMultiplication(rtPos, -1);
+        rtPos = Matrix.scalarMultiplication(rtPos, -1);
         transInv[0][3] = rtPos[0][0];
         transInv[1][3] = rtPos[1][0];
         transInv[2][3] = rtPos[2][0];

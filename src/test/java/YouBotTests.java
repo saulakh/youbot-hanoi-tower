@@ -50,11 +50,7 @@ public class YouBotTests {
         double[][] inputMatrix = new double[][] {{0,-3,2},{3,0,-1},{-2,1,0}};
         double[][] expected = new double[][] {{-0.69492056,0.71352099,0.08929286},{-0.19200697,-0.30378504,0.93319235},{0.69297817,0.6313497,0.34810748}};
         double[][] actual = robot.matrixExp3(inputMatrix);
-        for (int i=0; i < actual.length; i++) {
-            for (int j=0; j < actual[0].length; j++) {
-                Assert.assertEquals(expected[i][j], actual[i][j], 0.0001);
-            }
-        }
+        checkMatrixWithDelta(expected, actual, 0.0001);
     }
 
     @Test
@@ -62,7 +58,8 @@ public class YouBotTests {
         double[][] inputMatrix = new double[][] {{0,0,0,0},{0,0,-1.57079632,2.35619449},{0,1.57079632,0,2.35619449},{0,0,0,0}};
         double[][] expected = new double[][] {{1,0,0,0},{0,0,-1,0},{0,1,0,3},{0,0,0,1}};
         double[][] actual = robot.matrixExp6(inputMatrix);
-        Assert.assertArrayEquals(expected, actual);
+        Matrix.nearZero(actual);
+        checkMatrixWithDelta(expected, actual, 0.0001);
     }
 
     @Test
@@ -94,7 +91,7 @@ public class YouBotTests {
         double[][] inputMatrix = new double[][] {{1,0,0,0},{0,0,-1,0},{0,1,0,3},{0,0,0,1}};
         double[][] expected = new double[][] {{1,0,0,0},{0,0,1,-3},{0,-1,0,0},{0,0,0,1}};
         double[][] actual = robot.transInv(inputMatrix);
-        Matrix.replaceNegativeZeros(actual);
+        Matrix.nearZero(actual);
         Assert.assertArrayEquals(expected, actual);
     }
 
@@ -128,5 +125,13 @@ public class YouBotTests {
         double expected = 3.7416573867739413;
         double actual = robot.rotToAng3(inputVector);
         Assert.assertEquals(expected, actual, 0.00001);
+    }
+
+    public void checkMatrixWithDelta(double[][] expected, double[][] actual, double delta) {
+        for (int i=0; i < actual.length; i++) {
+            for (int j=0; j < actual[0].length; j++) {
+                Assert.assertEquals(expected[i][j], actual[i][j], 0.0001);
+            }
+        }
     }
 }

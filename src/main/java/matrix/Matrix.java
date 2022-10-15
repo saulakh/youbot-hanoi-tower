@@ -47,6 +47,15 @@ public class Matrix {
         return matrixOutput;
     }
 
+    public static double[][] rangeFromMatrix(double[][] matrix, int rowStart, int rowEnd, int colStart, int colEnd) {
+        double[][] outputMatrix = new double[rowEnd - rowStart][colEnd - colStart];
+        for (int i=0; i < rowEnd - rowStart; i++) {
+            if (colEnd - colStart >= 0)
+                System.arraycopy(matrix[rowStart + i], colStart, outputMatrix[i], 0, colEnd - colStart);
+        }
+        return outputMatrix;
+    }
+
     public static void replaceRangeFromMatrix(double[][] sourceMatrix, double[][] destMatrix, int destRowStart, int destColStart) {
         if (destRowStart + sourceMatrix.length > destMatrix.length || destColStart + sourceMatrix[0].length > destMatrix[0].length) {
             System.out.println("Out of Range Error: Cannot replace range of values.");
@@ -145,12 +154,13 @@ public class Matrix {
     }
 
     public static double[][] scalarMultiplication(double[][] matrix, double scalarValue) {
+        double[][] output = new double[matrix.length][matrix[0].length];
         for (int row=0; row < matrix.length; row++) {
             for (int col=0; col < matrix[0].length; col++) {
-                matrix[row][col] *= scalarValue;
+                output[row][col] = matrix[row][col] * scalarValue;
             }
         }
-        return matrix;
+        return output;
     }
 
     public static double[] scalarArrayMultiplication(double[] array, double scalarValue) {
@@ -209,13 +219,13 @@ public class Matrix {
         return scalarArrayMultiplication(vector, 1/norm);
     }
 
-    public static void replaceNegativeZeros(double[][] matrix) {
+    public static void nearZero(double[][] matrix) {
         /*
         Replaces any negative zeros in the matrix with 0.0 for unit tests
          */
         for (int i=0; i < matrix.length; i++) {
             for (int j=0; j < matrix[0].length; j++) {
-                if (matrix[i][j] == -0.0) {
+                if (Math.abs(matrix[i][j]) <= 0.000001) {
                     matrix[i][j] = 0.0;
                 }
             }

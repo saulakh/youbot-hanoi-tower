@@ -17,6 +17,14 @@ public class MatrixTests {
     }
 
     @Test
+    public void checkRangeFromMatrix() {
+        double[][] inputMatrix = new double[][] {{1,0,0,0},{0,0,-1,0},{0,1,0,3},{0,0,0,1}};
+        double[][] expected = new double[][] {{1,0,0},{0,0,-1},{0,1,0}};
+        double[][] actual = Matrix.rangeFromMatrix(inputMatrix, 0, 3, 0, 3);
+        Assert.assertArrayEquals(expected, actual);
+    }
+
+    @Test
     public void checkReplaceRangeFromMatrix() {
         double[][] graspExample = Matrix.identityMatrix(4);
         double theta = 1;

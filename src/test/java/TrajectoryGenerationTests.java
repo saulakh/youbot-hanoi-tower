@@ -18,7 +18,7 @@ public class TrajectoryGenerationTests {
         // Calculate full trajectory path
         traj.motionPlanning(endEffectorSE3, robot.cubeInitial, robot.cubeGoal);
 
-        // Check values throughout the path
+        // TODO: Check values throughout the path, or run simulation in Coppelia
 
     }
 }

@@ -204,16 +204,19 @@ public class YouBot {
         double[][] rot = transToRot(se3Matrix);
         double[][] omgMatrix = matrixLog3(rot);
         double[][] pos = Matrix.rangeFromMatrix(se3Matrix, 0, 3, 3, 4);
+        double theta = Math.acos((rot[0][0] + rot[1][1] + rot[2][2] - 1) / 2.0);
 
         if (Arrays.deepEquals(omgMatrix, new double[3][3])) {
             Matrix.replaceRangeFromMatrix(pos, output, 0, 3);
+        }
+        if (Math.abs(theta) <= 0.000001) {
+            theta = 0.000001;
         }
 
         Matrix.replaceRangeFromMatrix(omgMatrix, output, 0, 0);
         double[][] identity = Matrix.identityMatrix(3);
         double[][] negHalfOmega = Matrix.scalarMultiplication(omgMatrix, -0.5);
         double[][] omegaSquared = Matrix.matrixMultiplication(omgMatrix, omgMatrix);
-        double theta = Math.acos((rot[0][0] + rot[1][1] + rot[2][2] - 1) / 2.0);
         double scalar = (1.0 / theta - 1.0 / Math.tan(theta / 2) / 2.0) / theta;
         double[][] scalarOmegaSquared = Matrix.scalarMultiplication(omegaSquared, scalar);
 

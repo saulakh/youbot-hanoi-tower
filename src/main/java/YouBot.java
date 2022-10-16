@@ -1,7 +1,6 @@
 import matrix.Matrix;
 
-import static matrix.Matrix.rangeFromMatrix;
-import static matrix.Matrix.scalarArrayMultiplication;
+import java.util.Arrays;
 
 public class YouBot {
 
@@ -80,7 +79,7 @@ public class YouBot {
         - Returns the discretized trajectory as a list of N matrices in SE(3) separated in time by Tf/(N-1). The first in the list is xStart and the Nth is xEnd.
          */
         double timeGap = Tf / (N - 1.0);
-        double[][][] trajectory = new double[4][4][N];
+        double[][][] trajectory = new double[N][4][4];
         double s;
 
         for (int i=0; i < N; i++) {
@@ -89,7 +88,9 @@ public class YouBot {
             } else {
                 s = quinticTimeScaling(Tf, timeGap * i);
             }
-            // trajectory[i] = TODO: Create MatrixExp6, MatrixLog6 methods to finish this
+            double[][] xStartInvXEnd = Matrix.matrixMultiplication(transInv(xStart), xEnd);
+            double[][] expInput = Matrix.scalarMultiplication(matrixLog6(xStartInvXEnd), s);
+            trajectory[i] = Matrix.matrixMultiplication(xStart, matrixExp6(expInput));
         }
         return trajectory;
     }
@@ -133,6 +134,28 @@ public class YouBot {
         return Matrix.matrixAddition(matrixExp3, Matrix.scalarMultiplication(omgMatrixSquared, (1 - Math.cos(theta))));
     }
 
+    public double[][] matrixLog3(double[][] rotMatrix) {
+        double acosInput = (rotMatrix[0][0] + rotMatrix[1][1] + rotMatrix[2][2] - 1) / 2.0;
+        double[] omega;
+        if (acosInput >= 1) {
+            return new double[3][3];
+        } else if (acosInput <= -1) {
+            if ((Math.abs(1 + rotMatrix[2][2])) >= 0.000001) {
+                omega = Matrix.scalarArrayMultiplication(new double[] {rotMatrix[0][2], rotMatrix[1][2], 1 + rotMatrix[2][2]}, 1.0 / Math.pow(2 * (1 + rotMatrix[2][2]), 0.5));
+            } else if ((Math.abs(1 + rotMatrix[1][1])) >= 0.000001) {
+                omega = Matrix.scalarArrayMultiplication(new double[] {rotMatrix[0][1], 1 + rotMatrix[1][1], rotMatrix[2][1]}, 1.0 / Math.pow(2 * (1 + rotMatrix[1][1]), 0.5));
+            } else {
+                omega = Matrix.scalarArrayMultiplication(new double[] {1 + rotMatrix[0][0], rotMatrix[1][0], 1+ rotMatrix[2][0]}, 1.0 / Math.pow(2 * (1 + rotMatrix[0][0]), 0.5));
+            }
+            return vecToSo3(Matrix.scalarArrayMultiplication(omega, Math.PI));
+        }
+        double theta = Math.acos(acosInput);
+        double[][] negRotTranspose = Matrix.scalarMultiplication(Matrix.transposeMatrix(rotMatrix), -1);
+        double[][] rotMinusRT = Matrix.matrixAddition(rotMatrix, negRotTranspose);
+        double scalar = theta / (2.0 * Math.sin(theta));
+        return Matrix.scalarMultiplication(rotMinusRT, scalar);
+    }
+
     public double[][] matrixExp6(double[][] se3Matrix) {
         /*
         Computes the matrix exponential of an SE(3) representation of exponential coordinates
@@ -141,11 +164,17 @@ public class YouBot {
         - Returns the matrix exponential of the SE(3) matrix
          */
         double[][] matrixExp6 = new double[4][4];
-        double[][] rot = rangeFromMatrix(se3Matrix, 0, 3, 0, 3);
+        double[][] rot = Matrix.rangeFromMatrix(se3Matrix, 0, 3, 0, 3);
+        double[] pos = transToPos(se3Matrix);
         Matrix.replaceRangeFromMatrix(matrixExp3(rot), matrixExp6, 0, 0);
 
         double[][] identity = Matrix.identityMatrix(3);
         double theta = rotToAng3(so3ToVec(rot));
+        if (Math.abs(theta) <= 0.000001) {
+            Matrix.replaceRangeFromMatrix(Matrix.transposeArray(pos), matrixExp6, 0, 3);
+            matrixExp6[3] = new double[] {0,0,0,1};
+            return matrixExp6;
+        }
         double[][] identityTheta = Matrix.scalarMultiplication(identity, theta);
         double[][] omgMatrix = Matrix.scalarMultiplication(rot, 1/theta);
         double[][] omgMatrixSquared = Matrix.matrixMultiplication(omgMatrix, omgMatrix);
@@ -171,8 +200,29 @@ public class YouBot {
         Output:
         - Returns the matrix logarithm of the SE(3) matrix
          */
-        // TODO: Finish MatrixLog6 method
-        return se3Matrix;
+        double[][] output = new double[4][4];
+        double[][] rot = transToRot(se3Matrix);
+        double[][] omgMatrix = matrixLog3(rot);
+        double[][] pos = Matrix.rangeFromMatrix(se3Matrix, 0, 3, 3, 4);
+
+        if (Arrays.deepEquals(omgMatrix, new double[3][3])) {
+            Matrix.replaceRangeFromMatrix(pos, output, 0, 3);
+        }
+
+        Matrix.replaceRangeFromMatrix(omgMatrix, output, 0, 0);
+        double[][] identity = Matrix.identityMatrix(3);
+        double[][] negHalfOmega = Matrix.scalarMultiplication(omgMatrix, -0.5);
+        double[][] omegaSquared = Matrix.matrixMultiplication(omgMatrix, omgMatrix);
+        double theta = Math.acos((rot[0][0] + rot[1][1] + rot[2][2] - 1) / 2.0);
+        double scalar = (1.0 / theta - 1.0 / Math.tan(theta / 2) / 2.0) / theta;
+        double[][] scalarOmegaSquared = Matrix.scalarMultiplication(omegaSquared, scalar);
+
+        double[][] m1 = Matrix.matrixAddition(identity, negHalfOmega);
+        double[][] m2 = Matrix.matrixAddition(m1, scalarOmegaSquared);
+        double[][] product = Matrix.matrixMultiplication(m2, pos);
+        Matrix.replaceRangeFromMatrix(product, output, 0, 3);
+
+        return output;
     }
 
     public double[][] transToRot(double[][] se3Matrix) {

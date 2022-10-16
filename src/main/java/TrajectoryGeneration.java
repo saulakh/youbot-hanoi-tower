@@ -2,6 +2,8 @@ import matrix.Matrix;
 
 public class TrajectoryGeneration {
 
+    YouBot robot = new YouBot();
+
     public void getTrajectory(double[][] xStart, double[][] xEnd, int gripState, int Tf) {
         /*
          Inputs:
@@ -12,7 +14,21 @@ public class TrajectoryGeneration {
          Output:
          - Appends flattened trajectory to csv file
          */
-        // TODO: Add trajectory method, and append path to CSV
+        int N = (int)(Tf / robot.DELTA_T);
+        double[][][] trajectory = robot.screwTrajectory(xStart, xEnd, Tf, N, 3);
+        String trajFilePath = "trajectory.csv";
+
+        // Extract rotation and position values from trajectory
+        for (double[][] se3 : trajectory) {
+            double[] rot = Matrix.flattenedMatrix(robot.transToRot(se3));
+            double[] pos = robot.transToPos(se3);
+            // End-effector config is [rot, pos, grip]
+            double[] config = new double[13];
+            Matrix.replaceRangeFromArray(rot, config, 0);
+            Matrix.replaceRangeFromArray(pos, config, 9);
+            config[12] = gripState;
+            CSV.writeToCSV(trajFilePath, config);
+        }
     }
 
     public double[][] graspPosition(double[][] cubeConfig, double theta) {

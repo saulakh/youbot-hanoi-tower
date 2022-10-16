@@ -219,7 +219,7 @@ public class Matrix {
         return scalarArrayMultiplication(vector, 1/norm);
     }
 
-    public static void nearZero(double[][] matrix) {
+    public static double[][] nearZero(double[][] matrix) {
         /*
         Replaces any negative zeros in the matrix with 0.0 for unit tests
          */
@@ -230,6 +230,7 @@ public class Matrix {
                 }
             }
         }
+        return matrix;
     }
 
 }

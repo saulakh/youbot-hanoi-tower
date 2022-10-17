@@ -92,7 +92,6 @@ public class YouBotTests {
                 {-1.44321167, 2.94561275, 1.43306521, 0.3},
                 {-2.06639565, 1.82881722, -1.58868628, 0.4}};
         double[][] actual = robot.jacobianBody(BList, thetaList);
-        Matrix.printMatrix(actual);
         checkMatrixWithDelta(expected, actual, 0.0001);
     }
 

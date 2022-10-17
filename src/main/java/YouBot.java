@@ -237,7 +237,6 @@ public class YouBot {
         Output:
         - Returns the body Jacobian corresponding to the inputs (6xn real numbers)
          */
-        // TODO: Double check this, not sure if last column is right
         double[][] jacobian = new double[BList.length][BList[0].length];
         for (int i=0; i < BList.length; i++) {
             jacobian[i][3] = BList[i][3];

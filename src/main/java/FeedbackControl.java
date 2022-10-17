@@ -17,7 +17,6 @@ public class FeedbackControl {
         Output:
         - fullJacobian: Full Jacobian matrix (armJacobian, baseJacobian) to match order of controls and config
          */
-        // TODO: Finish debugging this method
         double[][] Te0 = Matrix.inverseMatrix(T0e);
         double[][] Te0Adjoint = robot.adjointMatrix(Te0);
 

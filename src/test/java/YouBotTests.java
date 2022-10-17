@@ -96,6 +96,17 @@ public class YouBotTests {
     }
 
     @Test
+    public void checkFKInBody() {
+        double[][] M = new double[][] {{-1,0,0,0},{0,1,0,6},{0,0,-1,2},{0,0,0,1}};
+        double[][] BList = Matrix.transposeMatrix(new double[][] {{0,0,-1,2,0,0},{0,0,0,0,1,0},{0,0,1,0,0,0.1}});
+        double[] thetaList = new double[] {Math.PI / 2.0, 3, Math.PI};
+        double[][] expected = new double[][] {{0,1,0,-5},{1,0,0,4},{0,0,-1,1.68584073},{0,0,0,1}};
+        double[][] actual = robot.fkInBody(M, BList, thetaList);
+        Matrix.nearZero(actual);
+        checkMatrixWithDelta(expected, actual, 0.0001);
+    }
+
+    @Test
     public void checkTransToRot() {
         double[][] inputMatrix = new double[][] {{1,0,0,0},{0,0,-1,0},{0,1,0,3},{0,0,0,1}};
         double[][] expected = new double[][] {{1,0,0},{0,0,-1},{0,1,0}};
@@ -142,6 +153,14 @@ public class YouBotTests {
         double[][] expected = new double[][] {{0,-3,2,4},{3,0,-1,5},{-2,1,0,6},{0,0,0,0}};
         double[][] actual = robot.vecToSE3(inputVector);
         Assert.assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void checkSE3ToVec() {
+        double[][] inputMatrix = new double[][] {{0,-3,2,4},{3,0,-1,5},{-2,1,0,6},{0,0,0,0}};
+        double[] expected = new double[] {1,2,3,4,5,6};
+        double[] actual = robot.se3ToVec(inputMatrix);
+        Assert.assertArrayEquals(expected, actual, 0.0001);
     }
 
     @Test

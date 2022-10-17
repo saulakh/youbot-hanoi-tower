@@ -261,6 +261,28 @@ public class YouBot {
         return jacobian;
     }
 
+    public double[][] fkInBody(double[][] M, double[][] BList, double[] thetaList) {
+        /*
+        Computes forward kinematics in the body frame for an open chain robot
+        - M: The home configuration (position and orientation) of the end-effector
+        - BList: The joint screw axes in the end-effector frame when the manipulator is at the home position, as a matrix with axes as columns
+        Output:
+        - Returns a homogenous transformation matrix representing the end effector frame when the joints are at the specified coordinates (body frame)
+         */
+        double[][] T = M.clone();
+        double[] BListCol = new double[BList.length];
+
+        for (int i=0; i < thetaList.length; i++) {
+            for (int j=0; j < BList.length; j++) {
+                BListCol[j] = BList[j][i];
+            }
+            double[] vecToSe3Input = Matrix.scalarArrayMultiplication(BListCol, thetaList[i]);
+            double[][] matrixExp6Input = vecToSE3(vecToSe3Input);
+            T = Matrix.matrixMultiplication(T, matrixExp6(matrixExp6Input));
+        }
+        return T;
+    }
+
     public double[][] transToRot(double[][] se3Matrix) {
         /*
         Extracts the rotation matrix from a transformation matrix
@@ -342,6 +364,16 @@ public class YouBot {
         double[][] vecLast3 = Matrix.transposeArray(Matrix.rangeFromArray(vector, 3, 6));
         Matrix.replaceRangeFromMatrix(vecLast3, vecToSe3, 0, 3);
         return vecToSe3;
+    }
+
+    public double[] se3ToVec(double[][] se3Matrix) {
+        /*
+        Converts SE(3) matrix into a spatial velocity vector
+        - se3Matrix: A 4x4 matrix in SE(3)
+        Output:
+        - Returns the spatial velocity 6-vector corresponding to the SE(3) matrix
+         */
+        return new double[] {se3Matrix[2][1], se3Matrix[0][2], se3Matrix[1][0], se3Matrix[0][3], se3Matrix[1][3], se3Matrix[2][3]};
     }
 
     public double[] rotToAxis3(double[] vector) {

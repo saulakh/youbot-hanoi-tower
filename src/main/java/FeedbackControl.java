@@ -30,7 +30,7 @@ public class FeedbackControl {
         double[][] armJacobian = robot.jacobianBody(BList, thetaList);
 
         // Concatenate [armJacobian, baseJacobian] to match order of controls and config
-        double[][] fullJacobian = new double[6][9]; // TODO: don't hardcode dimensions
+        double[][] fullJacobian = new double[6][baseJacobian[0].length + armJacobian[0].length];
         Matrix.replaceRangeFromMatrix(armJacobian, fullJacobian, 0, 0);
         Matrix.replaceRangeFromMatrix(baseJacobian, fullJacobian, 0, armJacobian[0].length);
 
@@ -67,6 +67,36 @@ public class FeedbackControl {
     - V: commanded end-effector twist, expressed in end-effector frame
      */
         double[] V = new double[6];
+
+        // TODO: Move F matrix and chassis kinematic model to youBot instead
+        // Chassis dimensions (meters)
+        double radius = 0.0475; // wheel radius
+        double length = 0.235; // forward-backward distance between wheels
+        double width = 0.15; // side-to-side distance between wheels
+        // Get F matrix
+        double[][] FMatrix = Matrix.scalarMultiplication(new double[][] {{-1/(length+width), 1/(length+width), 1/(length+width), -1/(length+width)},{1,1,1,1},{-1,1,-1,1}}, (radius/4));
+
+        double[] thetaList = new double[] {0,0,0.2,-1.6,0};
+        // Get end-effector configuration relative to base frame (for test input angles)
+        double[][] T0e = robot.fkInBody(robot.M0e, robot.BList, thetaList);
+        double[][] Je = jacobian(T0e, FMatrix, robot.BList, thetaList);
+
+        double[][] xInv = Matrix.inverseMatrix(X);
+        double[][] XdInv = Matrix.inverseMatrix(Xd);
+
+        // Error twist between current and reference state
+        double[][] matrixLog6Input = Matrix.matrixMultiplication(xInv, Xd);
+        double[][] se3ToVecInput = robot.matrixLog6(matrixLog6Input);
+        double[] xErr = robot.se3ToVec(se3ToVecInput);
+
+        // Error Integral is sum of all xErr * dT over time
+        for (int i=0; i < xErr.length; i++) {
+            errorIntegral[i] += Matrix.scalarArrayMultiplication(xErr, dT)[i];
+        }
+
+        // Feedforward reference twist
+
+
         return V;
     }
 }

@@ -82,6 +82,21 @@ public class YouBotTests {
     }
 
     @Test
+    public void checkJacobianBody() {
+        double[][] BList = Matrix.transposeMatrix(new double[][] {{0,0,1,0,0.2,0.2},{1,0,0,2,0,3},{0,1,0,0,2,1},{1,0,0,0.2,0.3,0.4}});
+        double[] thetaList = new double[] {0.2,1.1,0.1,1.2};
+        double[][] expected = new double[][] {{-0.04528405, 0.99500417, 0, 1},
+                {0.74359313, 0.09304865, 0.36235775, 0},
+                {-0.66709716, 0.03617541, -0.93203909, 0},
+                {2.32586047, 1.66809, 0.56410831, 0.2},
+                {-1.44321167, 2.94561275, 1.43306521, 0.3},
+                {-2.06639565, 1.82881722, -1.58868628, 0.4}};
+        double[][] actual = robot.jacobianBody(BList, thetaList);
+        Matrix.printMatrix(actual);
+        checkMatrixWithDelta(expected, actual, 0.0001);
+    }
+
+    @Test
     public void checkTransToRot() {
         double[][] inputMatrix = new double[][] {{1,0,0,0},{0,0,-1,0},{0,1,0,3},{0,0,0,1}};
         double[][] expected = new double[][] {{1,0,0},{0,0,-1},{0,1,0}};
@@ -120,6 +135,14 @@ public class YouBotTests {
         double[] expected = new double[] {1.0,2.0,3.0};
         double[] actual = robot.so3ToVec(inputMatrix);
         Assert.assertArrayEquals(expected, actual, 0.0001);
+    }
+
+    @Test
+    public void checkVecToSE3() {
+        double[] inputVector = new double[] {1,2,3,4,5,6};
+        double[][] expected = new double[][] {{0,-3,2,4},{3,0,-1,5},{-2,1,0,6},{0,0,0,0}};
+        double[][] actual = robot.vecToSE3(inputVector);
+        Assert.assertArrayEquals(expected, actual);
     }
 
     @Test

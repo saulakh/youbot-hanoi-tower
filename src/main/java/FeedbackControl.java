@@ -1,9 +1,13 @@
+import matrix.Matrix;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class FeedbackControl {
 
-    public static double[][] jacobian(double[][] T0e, double[][] F, double[][] BList, double[][] thetaList) {
+    YouBot robot = new YouBot();
+
+    public double[][] jacobian(double[][] T0e, double[][] F, double[][] BList, double[] thetaList) {
         /*
         Inputs:
         - T0e: transformation matrix from base to end-effector
@@ -11,20 +15,30 @@ public class FeedbackControl {
         - BList: screw axes when arm is at home configuration
         - thetaList: list of 5 joint angles for arm configuration
         Output:
-        - fullJacobian: Full Jacobian matrix (J_arm, J_base) to match order of controls and config
+        - fullJacobian: Full Jacobian matrix (armJacobian, baseJacobian) to match order of controls and config
          */
-        double[][] fullJacobian = new double[6][9];
-        // Need to create method for Adjoint representation of Teb
+        // TODO: Finish debugging this method
+        double[][] Te0 = Matrix.inverseMatrix(T0e);
+        double[][] Te0Adjoint = robot.adjointMatrix(Te0);
 
         // Build F6 matrix
+        int m = F[0].length;
+        double[][] F6Matrix = new double[6][m];
+        Matrix.replaceRangeFromMatrix(F, F6Matrix, 2, 0);
 
-        // baseJacobian is AdjointTeb @ F6
-        // Need to create JacobianBody method to calculate armJacobian
+        // Get full Jacobian matrix
+        double[][] baseJacobian = Matrix.matrixMultiplication(Te0Adjoint, F6Matrix);
+        double[][] armJacobian = robot.jacobianBody(BList, thetaList);
+
+        // Concatenate [armJacobian, baseJacobian] to match order of controls and config
+        double[][] fullJacobian = new double[6][9]; // TODO: don't hardcode dimensions
+        Matrix.replaceRangeFromMatrix(armJacobian, fullJacobian, 0, 0);
+        Matrix.replaceRangeFromMatrix(baseJacobian, fullJacobian, 0, armJacobian[0].length);
 
         return fullJacobian;
     }
 
-    public static List<Integer> testJointLimits(double[] currentConfig, double jointMax) {
+    public List<Integer> testJointLimits(double[] currentConfig, double jointMax) {
         /*
         Returns a list of joint angles that exceed joint limits
          */
@@ -40,7 +54,7 @@ public class FeedbackControl {
         return constrainJoints;
     }
 
-    public static double[] feedbackControl(double[][] X, double[][] Xd, double[][] XdNext, double[][] KpMatrix, double[][] KiMatrix, double dT, double[] currentConfig, double[] errorIntegral) {
+    public double[] feedbackControl(double[][] X, double[][] Xd, double[][] XdNext, double[][] KpMatrix, double[][] KiMatrix, double dT, double[] currentConfig, double[] errorIntegral) {
     /*
     Inputs:
     - X: current actual end-effector configuration (Tse)

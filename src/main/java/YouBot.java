@@ -24,7 +24,7 @@ public class YouBot {
     double[][] Tb0 = new double[][] {{1,0,0,0.1662},{0,1,0,0},{0,0,1,0.0026},{0,0,0,1}};
     double[][] M0e = new double[][] {{1,0,0,0.033},{0,1,0,0},{0,0,1,0.6546},{0,0,0,1}};
     double[][] BList = Matrix.transposeMatrix(new double[][] {{0,0,1,0,0.033,0},{0,-1,0,-0.5076,0,0},{0,-1,0,-0.3526,0,0},{0,-1,0,-0.2176,0,0},{0,0,1,0,0,0}});
-    double[][] thetaList = Matrix.transposeArray(Matrix.rangeFromArray(initialConfig, 3, 8));
+    double[] thetaList = Matrix.rangeFromArray(initialConfig, 3, 8);
 
     // Starting configuration and controls
     double[] currentConfig = initialConfig;
@@ -228,6 +228,40 @@ public class YouBot {
         return output;
     }
 
+    public double[][] jacobianBody(double[][] BList, double[] thetaList) {
+        /*
+        Computes the body Jacobian for an open chain robot
+        - BList: The joint screw axes in the end-effector frame when the manipulator is at the home position,
+        in the format of a matrix with axes as the columns
+        - thetaList: A list of joint coordinates
+        Output:
+        - Returns the body Jacobian corresponding to the inputs (6xn real numbers)
+         */
+        // TODO: Double check this, not sure if last column is right
+        double[][] jacobian = new double[BList.length][BList[0].length];
+        for (int i=0; i < BList.length; i++) {
+            jacobian[i][3] = BList[i][3];
+        }
+        double[][] T = Matrix.identityMatrix(4);
+        double[] BListCol = new double[BList.length];
+        double[] BListNextCol = new double[BList.length];
+
+        for (int i=thetaList.length - 2; i > -1; i--) {
+            for (int j=0; j < BList.length; j++) {
+                BListCol[j] = BList[j][i];
+            }
+            for (int k=0; k < BList.length; k++) {
+                BListNextCol[k] = BList[k][i+1];
+            }
+            double[] vecToSe3Input = Matrix.scalarArrayMultiplication(BListNextCol, -thetaList[i+1]);
+            double[][] matrixExpInput = vecToSE3(vecToSe3Input);
+            T = Matrix.matrixMultiplication(T, matrixExp6(matrixExpInput));
+            double[][] adjTimesBListCol = Matrix.matrixMultiplication(adjointMatrix(T), Matrix.transposeArray(BListCol));
+            Matrix.replaceRangeFromMatrix(adjTimesBListCol, jacobian, 0, i);
+        }
+        return jacobian;
+    }
+
     public double[][] transToRot(double[][] se3Matrix) {
         /*
         Extracts the rotation matrix from a transformation matrix
@@ -294,6 +328,21 @@ public class YouBot {
         - Returns the 3-vector corresponding to the skew-symmetric representation
          */
         return new double[] {so3Matrix[2][1], so3Matrix[0][2], so3Matrix[1][0]};
+    }
+
+    public double[][] vecToSE3(double[] vector) {
+        /*
+        Converts a spatial velocity vector into a 4x4 matrix in se3
+        - vector: A 6-vector representing a spatial velocity
+        Output:
+        - Returns the 4x4 SE3 representation of the vector
+         */
+        double[][] vecToSe3 = new double[4][4];
+        double[][] so3 = vecToSo3(Matrix.rangeFromArray(vector, 0, 3));
+        Matrix.replaceRangeFromMatrix(so3, vecToSe3, 0, 0);
+        double[][] vecLast3 = Matrix.transposeArray(Matrix.rangeFromArray(vector, 3, 6));
+        Matrix.replaceRangeFromMatrix(vecLast3, vecToSe3, 0, 3);
+        return vecToSe3;
     }
 
     public double[] rotToAxis3(double[] vector) {

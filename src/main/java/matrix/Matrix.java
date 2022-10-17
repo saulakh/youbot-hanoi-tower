@@ -126,7 +126,7 @@ public class Matrix {
         /*
         The adjugate matrix is defined by A_ij = (-1) ^ (i + j) * det(M_ij)
          */
-        double[][] cofactor = new double[matrix.length][matrix.length];
+        double[][] cofactor = new double[matrix.length][matrix[0].length];
         for (int i=0; i < matrix.length; i++) {
             for (int j=0; j < matrix[0].length; j++) {
                 cofactor[i][j] = Math.pow(-1, (i + j)) * matrixDeterminant(subMatrix(matrix, i, j));

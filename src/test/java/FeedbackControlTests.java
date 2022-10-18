@@ -27,6 +27,24 @@ public class FeedbackControlTests {
         checkMatrixWithDelta(expected, actual, 0.001);
     }
 
+    @Test
+    public void checkFeedbackControl() {
+        double[] robotConfig = {0,0,0,0,0,0.2,-1.6,0,0,0,0,0,0};
+        double[] errorIntegral = {0,0,0,0,0,0};
+        double dT = 0.01;
+
+        // Given Xd, Xd_next, X, Kp, Ki:
+        double[][] Xd = {{0,0,1,0.5},{0,1,0,0},{-1,0,0,0.5},{0,0,0,1}};
+        double[][] XdNext = {{0,0,1,0.6},{0,1,0,0},{-1,0,0,0.3},{0,0,0,1}};
+        double[][] X = {{0.17,0,0.985,0.387},{0,1,0,0},{-0.985,0,0.17,0.57},{0,0,0,1}};
+        double[][] Kp = new double[6][6];
+        double[][] Ki = new double[6][6];
+
+        double[] expected = {157.2, 157.2, 157.2, 157.2, -652.9, 1398.6, -745.7, 0};
+        double[] actual = feedback.feedbackControl(X, Xd, XdNext, Kp, Ki, dT, robotConfig, errorIntegral);
+        Assert.assertArrayEquals(expected, actual, 0.0001);
+    }
+
     public void checkMatrixWithDelta(double[][] expected, double[][] actual, double delta) {
         for (int i=0; i < actual.length; i++) {
             for (int j=0; j < actual[0].length; j++) {

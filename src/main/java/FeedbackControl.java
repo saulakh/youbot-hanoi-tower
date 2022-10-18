@@ -1,6 +1,7 @@
 import matrix.Matrix;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class FeedbackControl {
@@ -66,7 +67,7 @@ public class FeedbackControl {
     Outputs:
     - V: commanded end-effector twist, expressed in end-effector frame
      */
-        double[] V = new double[6];
+        double[] V = new double[8];
 
         // TODO: Move F matrix and chassis kinematic model to youBot instead
         // Chassis dimensions (meters)
@@ -95,6 +96,13 @@ public class FeedbackControl {
         }
 
         // Feedforward reference twist
+        matrixLog6Input = Matrix.matrixMultiplication(XdInv, XdNext);
+        se3ToVecInput = Matrix.scalarMultiplication(matrixLog6Input, 1/dT);
+        double[] Vd = robot.se3ToVec(se3ToVecInput);
+        double[][] adjointInput = Matrix.matrixMultiplication(xInv, Xd);
+        double[][] VdAdjoint = Matrix.matrixMultiplication(robot.adjointMatrix(adjointInput), Matrix.transposeArray(Vd));
+
+        // Get commanded end-effector twist V
 
 
         return V;

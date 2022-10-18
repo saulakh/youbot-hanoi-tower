@@ -141,8 +141,17 @@ public class Matrix {
     }
 
     public static double[][] pseudoInverse(double[][] matrix) {
-        // TODO: Finish pseduoinverse
-        return matrix;
+        int m = matrix.length;
+        int n = matrix[0].length;
+        double[][] transpose = transposeMatrix(matrix);
+        if (m > n) {
+            double[][] inverseAtA = inverseMatrix(matrixMultiplication(transpose, matrix));
+            return matrixMultiplication(inverseAtA, transpose);
+        } else if (m < n) {
+            double[][] inverseAAt = inverseMatrix(matrixMultiplication(matrix, transpose));
+            return matrixMultiplication(transpose, inverseAAt);
+        }
+        return inverseMatrix(matrix);
     }
 
     public static double[][] pseudoInvTol(double[][] matrix, double tolerance) {

@@ -65,4 +65,20 @@ public class MatrixTests {
         double[][] actual = Matrix.inverseMatrix(testMatrix);
         Assert.assertArrayEquals(expected, actual);
     }
+
+    @Test
+    public void checkPseudoInverse() {
+        double[][] testMatrix = new double[][] {{0.1150, -1.1121, 0.2334, -0.2321},{1.2753, 1.0699, 0.2335, 1.0177},{0.3942, -1.0498, -0.0486, 0.3240}};
+        double[][] expected = new double[][] {{0.7864, 0.5613, -0.2359},{-0.1709, 0.1768, -0.5890},{1.8576, 0.5363, -1.4498},{-1.2319, -0.0296, 1.2474}};
+        double[][] actual = Matrix.pseudoInverse(testMatrix);
+        checkMatrixWithDelta(expected, actual, 0.0001);
+    }
+
+    public void checkMatrixWithDelta(double[][] expected, double[][] actual, double delta) {
+        for (int i=0; i < actual.length; i++) {
+            for (int j=0; j < actual[0].length; j++) {
+                Assert.assertEquals(expected[i][j], actual[i][j], delta);
+            }
+        }
+    }
 }

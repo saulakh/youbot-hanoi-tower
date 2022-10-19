@@ -239,7 +239,7 @@ public class YouBot {
          */
         double[][] jacobian = new double[BList.length][BList[0].length];
         for (int i=0; i < BList.length; i++) {
-            jacobian[i][3] = BList[i][3];
+            jacobian[i][BList[0].length - 1] = BList[i][BList[0].length - 1];
         }
         double[][] T = Matrix.identityMatrix(4);
         double[] BListCol = new double[BList.length];
@@ -380,11 +380,7 @@ public class YouBot {
         /*
         Calculates the corresponding axis from a 3-vector of exponential coordinates for rotation
          */
-        double norm = 0;
-        for (double val : vector) {
-            norm += Math.pow(val, 2);
-        }
-        norm = Math.pow(norm, 0.5);
+        double norm = rotToAng3(vector);
         return Matrix.scalarArrayMultiplication(vector, 1/norm);
     }
 

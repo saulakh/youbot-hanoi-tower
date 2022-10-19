@@ -155,11 +155,17 @@ public class Matrix {
     }
 
     public static double[][] pseudoInvTol(double[][] matrix, double tolerance) {
-        // TODO: Finish pinvTol
         /*
         Replaces any values greater than the tolerance with the tolerance, and returns the pseudo inverse of the matrix
          */
-        return matrix;
+        for (int i=0; i < matrix.length; i++) {
+            for (int j=0; j < matrix[0].length; j++) {
+                if (matrix[i][j] < tolerance) {
+                    matrix[i][j] = tolerance;
+                }
+            }
+        }
+        return pseudoInverse(matrix);
     }
 
     public static double[][] scalarMultiplication(double[][] matrix, double scalarValue) {
@@ -205,6 +211,14 @@ public class Matrix {
         return arrayOutput;
     }
 
+    public static double[] arrayAddition(double[] arrayOne, double[] arrayTwo) {
+        double[] output = new double[arrayOne.length];
+        for (int i=0; i < arrayOne.length; i++) {
+            output[i] = arrayOne[i] + arrayTwo[i];
+        }
+        return output;
+    }
+
     public static double[][] identityMatrix(int dimensions) {
         double[][] identityOutput = new double[dimensions][dimensions];
         for (int i=0; i < dimensions; i++) {
@@ -219,16 +233,7 @@ public class Matrix {
         }
     }
 
-    public static double[] normalizeVector(double[] vector) {
-        double norm = 0;
-        for (double val : vector) {
-            norm += Math.pow(val, 2);
-        }
-        norm = Math.pow(norm, 0.5);
-        return scalarArrayMultiplication(vector, 1/norm);
-    }
-
-    public static double[][] nearZero(double[][] matrix) {
+    public static void nearZero(double[][] matrix) {
         /*
         Replaces any negative zeros in the matrix with 0.0 for unit tests
          */
@@ -239,7 +244,6 @@ public class Matrix {
                 }
             }
         }
-        return matrix;
     }
 
 }

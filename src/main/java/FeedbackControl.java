@@ -65,10 +65,8 @@ public class FeedbackControl {
     - currentConfig: (phi,x,y,J1,J2,J3,J4,J5,W1,W2,W3,W4)
     - errorIntegral: sum of all error twists over time
     Outputs:
-    - V: commanded end-effector twist, expressed in end-effector frame
+    - controls: 5 joint speeds and 4 wheel speeds needed to reach next position
      */
-        double[] V = new double[8];
-
         // TODO: Move F matrix and chassis kinematic model to youBot instead
         // Chassis dimensions (meters)
         double radius = 0.0475; // wheel radius
@@ -100,11 +98,29 @@ public class FeedbackControl {
         se3ToVecInput = Matrix.scalarMultiplication(matrixLog6Input, 1/dT);
         double[] Vd = robot.se3ToVec(se3ToVecInput);
         double[][] adjointInput = Matrix.matrixMultiplication(xInv, Xd);
-        double[][] VdAdjoint = Matrix.matrixMultiplication(robot.adjointMatrix(adjointInput), Matrix.transposeArray(Vd));
+        double[][] VdAdjointMatrix = Matrix.matrixMultiplication(robot.adjointMatrix(adjointInput), Matrix.transposeArray(Vd));
+        double[] VdAdjoint = Matrix.flattenedMatrix(VdAdjointMatrix);
 
         // Get commanded end-effector twist V
+        double[][] KpError = Matrix.matrixMultiplication(KpMatrix, Matrix.transposeArray(xErr));
+        double[][] KiError = Matrix.matrixMultiplication(KiMatrix, Matrix.transposeArray(errorIntegral));
+        double[] sumError = Matrix.arrayAddition(Matrix.flattenedMatrix(KpError), Matrix.flattenedMatrix(KiError));
+        double[] V = Matrix.arrayAddition(VdAdjoint, sumError);
 
+        // Get controls and test joint limits
+        double[][] JeInv = Matrix.pseudoInverse(Je);
+        double[][] controlsArray = Matrix.matrixMultiplication(JeInv, Matrix.transposeArray(V));
+        double[] controls = Matrix.flattenedMatrix(controlsArray);
 
-        return V;
+//        double[] nextConfig = NextState.nextState(currentConfig, controls, dT, robot.MAX_SPEED);
+//        List<Integer> constrainJoints = testJointLimits(nextConfig, 2);
+//        if (constrainJoints.size() > 1) {
+//            for (int joint : constrainJoints) {
+//                // TODO: create a method to get column from a matrix
+//                System.out.println("constrain joint: " + joint);
+//            }
+//        }
+
+        return controls;
     }
 }

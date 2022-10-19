@@ -40,9 +40,9 @@ public class FeedbackControlTests {
         double[][] Kp = new double[6][6];
         double[][] Ki = new double[6][6];
 
-        double[] expected = {157.2, 157.2, 157.2, 157.2, -652.9, 1398.6, -745.7, 0};
+        double[] expected = {0, -653.192, 1399.261, -746.069, 0, 157.244, 157.244, 157.244, 157.244};
         double[] actual = feedback.feedbackControl(X, Xd, XdNext, Kp, Ki, dT, robotConfig, errorIntegral);
-        Assert.assertArrayEquals(expected, actual, 0.0001);
+        Assert.assertArrayEquals(expected, actual, 0.001);
     }
 
     public void checkMatrixWithDelta(double[][] expected, double[][] actual, double delta) {

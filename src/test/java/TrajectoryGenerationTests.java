@@ -1,3 +1,4 @@
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TrajectoryGenerationTests {
@@ -18,7 +19,8 @@ public class TrajectoryGenerationTests {
         // Calculate full trajectory path
         traj.motionPlanning(endEffectorSE3, robot.cubeInitial, robot.cubeGoal);
 
-        // TODO: Check values throughout the path, or run simulation in Coppelia
-
+        double[] expected = {0.0, 1.0, 0.0, 0.7071067811865475, 0.0, -0.7071067811865476, -0.7071067811865476, 0.0, -0.7071067811865475, 0.0, -1.0, 0.1, 0.0};
+        double[] actual = CSV.readFromCSV(trajFilePath);
+        Assert.assertArrayEquals(expected, actual, 0.0001);
     }
 }

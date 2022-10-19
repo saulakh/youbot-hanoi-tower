@@ -1,7 +1,7 @@
 import matrix.Matrix;
+import matrix.Robotics;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class FeedbackControl {
@@ -19,7 +19,7 @@ public class FeedbackControl {
         - fullJacobian: Full Jacobian matrix (armJacobian, baseJacobian) to match order of controls and config
          */
         double[][] Te0 = Matrix.inverseMatrix(T0e);
-        double[][] Te0Adjoint = robot.adjointMatrix(Te0);
+        double[][] Te0Adjoint = Robotics.adjointMatrix(Te0);
 
         // Build F6 matrix
         int m = F[0].length;
@@ -28,7 +28,7 @@ public class FeedbackControl {
 
         // Get full Jacobian matrix
         double[][] baseJacobian = Matrix.matrixMultiplication(Te0Adjoint, F6Matrix);
-        double[][] armJacobian = robot.jacobianBody(BList, thetaList);
+        double[][] armJacobian = Robotics.jacobianBody(BList, thetaList);
 
         // Concatenate [armJacobian, baseJacobian] to match order of controls and config
         double[][] fullJacobian = new double[6][baseJacobian[0].length + armJacobian[0].length];
@@ -67,26 +67,18 @@ public class FeedbackControl {
     Outputs:
     - controls: 5 joint speeds and 4 wheel speeds needed to reach next position
      */
-        // TODO: Move F matrix and chassis kinematic model to youBot instead
-        // Chassis dimensions (meters)
-        double radius = 0.0475; // wheel radius
-        double length = 0.235; // forward-backward distance between wheels
-        double width = 0.15; // side-to-side distance between wheels
-        // Get F matrix
-        double[][] FMatrix = Matrix.scalarMultiplication(new double[][] {{-1/(length+width), 1/(length+width), 1/(length+width), -1/(length+width)},{1,1,1,1},{-1,1,-1,1}}, (radius/4));
-
         double[] thetaList = new double[] {0,0,0.2,-1.6,0};
         // Get end-effector configuration relative to base frame (for test input angles)
-        double[][] T0e = robot.fkInBody(robot.M0e, robot.BList, thetaList);
-        double[][] Je = jacobian(T0e, FMatrix, robot.BList, thetaList);
+        double[][] T0e = Robotics.fkInBody(robot.M0e, robot.BList, thetaList);
+        double[][] Je = jacobian(T0e, robot.F, robot.BList, thetaList);
 
         double[][] xInv = Matrix.inverseMatrix(X);
         double[][] XdInv = Matrix.inverseMatrix(Xd);
 
         // Error twist between current and reference state
         double[][] matrixLog6Input = Matrix.matrixMultiplication(xInv, Xd);
-        double[][] se3ToVecInput = robot.matrixLog6(matrixLog6Input);
-        double[] xErr = robot.se3ToVec(se3ToVecInput);
+        double[][] se3ToVecInput = Robotics.matrixLog6(matrixLog6Input);
+        double[] xErr = Robotics.se3ToVec(se3ToVecInput);
 
         // Error Integral is sum of all xErr * dT over time
         for (int i=0; i < xErr.length; i++) {
@@ -96,9 +88,9 @@ public class FeedbackControl {
         // Feedforward reference twist
         matrixLog6Input = Matrix.matrixMultiplication(XdInv, XdNext);
         se3ToVecInput = Matrix.scalarMultiplication(matrixLog6Input, 1/dT);
-        double[] Vd = robot.se3ToVec(se3ToVecInput);
+        double[] Vd = Robotics.se3ToVec(se3ToVecInput);
         double[][] adjointInput = Matrix.matrixMultiplication(xInv, Xd);
-        double[][] VdAdjointMatrix = Matrix.matrixMultiplication(robot.adjointMatrix(adjointInput), Matrix.transposeArray(Vd));
+        double[][] VdAdjointMatrix = Matrix.matrixMultiplication(Robotics.adjointMatrix(adjointInput), Matrix.transposeArray(Vd));
         double[] VdAdjoint = Matrix.flattenedMatrix(VdAdjointMatrix);
 
         // Get commanded end-effector twist V
@@ -112,14 +104,18 @@ public class FeedbackControl {
         double[][] controlsArray = Matrix.matrixMultiplication(JeInv, Matrix.transposeArray(V));
         double[] controls = Matrix.flattenedMatrix(controlsArray);
 
-//        double[] nextConfig = NextState.nextState(currentConfig, controls, dT, robot.MAX_SPEED);
-//        List<Integer> constrainJoints = testJointLimits(nextConfig, 2);
-//        if (constrainJoints.size() > 1) {
-//            for (int joint : constrainJoints) {
-//                // TODO: create a method to get column from a matrix
-//                System.out.println("constrain joint: " + joint);
-//            }
-//        }
+        // Check joint limits, and recalculate controls if needed
+        double[] nextConfig = NextState.nextState(currentConfig, controls, dT, robot.MAX_SPEED);
+        List<Integer> constrainJoints = testJointLimits(nextConfig, 2);
+        double tolerance = 0.002;
+        if (constrainJoints.size() > 1) {
+            for (int joint : constrainJoints) {
+                Matrix.replaceColumnValues(Je, joint - 1, 0);
+                double[][] JePinv = Matrix.pseudoInvTol(Je, tolerance);
+                controlsArray = Matrix.matrixMultiplication(JePinv, Matrix.transposeArray(V));
+                controls = Matrix.flattenedMatrix(controlsArray);
+            }
+        }
 
         return controls;
     }

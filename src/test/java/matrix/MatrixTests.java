@@ -35,6 +35,14 @@ public class MatrixTests {
     }
 
     @Test
+    public void checkReshapeArray() {
+        double[] input = {5,2,6,1,0,6,2,0,3,8,1,4,1,8,5,6};
+        double[][] expected = new double[][] {{5,2,6,1},{0,6,2,0},{3,8,1,4},{1,8,5,6}};
+        double[][] actual = Matrix.reshapeArray(input, 4, 4);
+        Assert.assertArrayEquals(expected, actual);
+    }
+
+    @Test
     public void checkDeterminant3x3() {
         double expected = 23.0;
         double[][] testMatrix = new double[][] {{7,-4,2},{3,1,-5},{2,2,-5}};

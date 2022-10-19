@@ -6,13 +6,9 @@ public class FeedbackControlTests {
 
     YouBot robot = new YouBot();
     FeedbackControl feedback = new FeedbackControl();
-    double radius = robot.WHEEL_RADIUS;
-    double length = robot.FORWARD_BACKWARD_LENGTH;
-    double width = robot.SIDE_TO_SIDE_WIDTH;
 
     double[] testConfig = new double[] {0,0,0,0,0,0.2,-1.6,0,0,0,0,0,0};
     double[] thetaList = Matrix.rangeFromArray(testConfig, 3, 8);
-    double[][] F = Matrix.scalarMultiplication(new double[][] {{-1/(length+width),1/(length+width),1/(length+width),-1/(length+width)},{1,1,1,1}, {-1,1,-1,1}}, radius/4);
     double[][] T0e = new double[][] {{0.16996714, 0, 0.98544973, 0.2206135},{0,1,0,0},{-0.98544973, 0, 0.16996714, 0.47129384},{0,0,0,1}};
 
     @Test
@@ -23,7 +19,7 @@ public class FeedbackControlTests {
                 {0, -0.24000297, -0.21365806, -0.2176, 0, 0.00201836, 0.00201836, 0.00201836, 0.00201836},
                 {0.2206135, 0, 0, 0, 0, -0.01867964, 0.01867964, -0.00507036, 0.00507036},
                 {0, -0.28768714, -0.13494244, 0, 0, 0.01170222, 0.01170222, 0.01170222, 0.01170222}};
-        double[][] actual = feedback.jacobian(T0e, F, robot.BList, thetaList);
+        double[][] actual = feedback.jacobian(T0e, robot.F, robot.BList, thetaList);
         checkMatrixWithDelta(expected, actual, 0.001);
     }
 
@@ -40,7 +36,10 @@ public class FeedbackControlTests {
         double[][] Kp = new double[6][6];
         double[][] Ki = new double[6][6];
 
-        double[] expected = {0, -653.192, 1399.261, -746.069, 0, 157.244, 157.244, 157.244, 157.244};
+        // Expected value before recalculating controls:
+        // double[] expected = {0, -653.192, 1399.261, -746.069, 0, 157.244, 157.244, 157.244, 157.244};
+        // Updated value after recalculating controls:
+        double[] expected = {0, -15, 15, -15, 0, 15, 15, 15, 15};
         double[] actual = feedback.feedbackControl(X, Xd, XdNext, Kp, Ki, dT, robotConfig, errorIntegral);
         Assert.assertArrayEquals(expected, actual, 0.001);
     }

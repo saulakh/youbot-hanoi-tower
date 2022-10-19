@@ -28,17 +28,9 @@ public class NextState {
          - chassisConfig: new chassis state (phi,x,y)
          */
         YouBot youBot = new YouBot();
-        double radius = youBot.WHEEL_RADIUS;
-        double length = youBot.FORWARD_BACKWARD_LENGTH;
-        double width = youBot.SIDE_TO_SIDE_WIDTH;
-
-        // H(0) matrix
-        double[][] H = Matrix.scalarMultiplication(new double[][] {{-length-width,1,-1}, {length+width,1,1}, {length+width,1,-1}, {-length-width,1,1}}, 1/radius);
-        // F is pseudo inverse of H(0)
-        double[][] F = Matrix.scalarMultiplication(new double[][] {{-1/(length+width),1/(length+width),1/(length+width),-1/(length+width)},{1,1,1,1}, {-1,1,-1,1}}, radius/4);
 
         // Body Twist
-        double[][] Vb = Matrix.matrixMultiplication(F, Matrix.transposeArray(dTheta));
+        double[][] Vb = Matrix.matrixMultiplication(youBot.F, Matrix.transposeArray(dTheta));
         assert Vb != null;
         double omegaBZ = Vb[0][0];
         double velBX = Vb[1][0];

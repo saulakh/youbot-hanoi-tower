@@ -1,4 +1,5 @@
 import matrix.Matrix;
+import matrix.Robotics;
 
 public class TrajectoryGeneration {
 
@@ -15,13 +16,13 @@ public class TrajectoryGeneration {
          - Appends flattened trajectory to csv file
          */
         int N = (int)(Tf / robot.DELTA_T);
-        double[][][] trajectory = robot.screwTrajectory(xStart, xEnd, Tf, N, 3);
+        double[][][] trajectory = Robotics.screwTrajectory(xStart, xEnd, Tf, N, 3);
         String trajFilePath = "trajectory.csv";
 
         // Extract rotation and position values from trajectory
         for (double[][] se3 : trajectory) {
-            double[] rot = Matrix.flattenedMatrix(robot.transToRot(se3));
-            double[] pos = robot.transToPos(se3);
+            double[] rot = Matrix.flattenedMatrix(Robotics.transToRot(se3));
+            double[] pos = Robotics.transToPos(se3);
             // End-effector config is [rot, pos, grip]
             double[] config = new double[13];
             Matrix.replaceRangeFromArray(rot, config, 0);

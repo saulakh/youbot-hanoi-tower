@@ -79,6 +79,33 @@ public class Matrix {
         return flattenedOutput;
     }
 
+    public static double[][] reshapeArray(double[] array, int rows, int cols) {
+        int totalValues = rows * cols;
+        if (totalValues != array.length) {
+            System.out.println("Error reshaping: Dimensions do not match.");
+            return null;
+        }
+        double[][] output = new double[rows][cols];
+        for (int i=0; i < rows; i++) {
+            System.arraycopy(array, i * cols, output[i], 0, cols);
+        }
+        return output;
+    }
+
+    public static double[] columnFromMatrix(double[][] matrix, int col) {
+        double[] column = new double[matrix.length];
+        for (int i=0; i < matrix.length; i++) {
+            column[i] = matrix[i][col];
+        }
+        return column;
+    }
+
+    public static void replaceColumnValues(double[][] matrix, int col, double newVal) {
+        for (int i=0; i < matrix.length; i++) {
+            matrix[i][col] = newVal;
+        }
+    }
+
     public static double matrixDeterminant(double[][] matrix) {
         double determinant = 0;
         int dimension = matrix.length;

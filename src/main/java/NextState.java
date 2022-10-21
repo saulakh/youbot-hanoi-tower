@@ -1,4 +1,4 @@
-import matrix.Matrix;
+import libraries.Matrix;
 
 import java.util.Arrays;
 

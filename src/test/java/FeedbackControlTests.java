@@ -1,4 +1,4 @@
-import matrix.Matrix;
+import libraries.Matrix;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -40,7 +40,7 @@ public class FeedbackControlTests {
         // double[] expected = {0, -653.192, 1399.261, -746.069, 0, 157.244, 157.244, 157.244, 157.244};
         // Updated value after recalculating controls:
         double[] expected = {0, -15, 15, -15, 0, 15, 15, 15, 15};
-        double[] actual = feedback.feedbackControl(X, Xd, XdNext, Kp, Ki, dT, robotConfig, errorIntegral);
+        double[] actual = feedback.feedbackControl(robot, X, Xd, XdNext, Kp, Ki, dT, robotConfig, errorIntegral);
         Assert.assertArrayEquals(expected, actual, 0.001);
     }
 

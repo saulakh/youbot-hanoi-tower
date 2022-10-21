@@ -1,5 +1,5 @@
-import matrix.Matrix;
-import matrix.Robotics;
+import libraries.Matrix;
+import libraries.Robotics;
 import org.junit.Assert;
 import org.junit.Test;
 

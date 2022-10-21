@@ -1,4 +1,4 @@
-package matrix;
+package libraries;
 
 import org.junit.Assert;
 import org.junit.Test;

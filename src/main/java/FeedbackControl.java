@@ -1,12 +1,10 @@
-import matrix.Matrix;
-import matrix.Robotics;
+import libraries.Matrix;
+import libraries.Robotics;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class FeedbackControl {
-
-    YouBot robot = new YouBot();
 
     public double[][] jacobian(double[][] T0e, double[][] F, double[][] BList, double[] thetaList) {
         /*
@@ -54,7 +52,7 @@ public class FeedbackControl {
         return constrainJoints;
     }
 
-    public double[] feedbackControl(double[][] X, double[][] Xd, double[][] XdNext, double[][] KpMatrix, double[][] KiMatrix, double dT, double[] currentConfig, double[] errorIntegral) {
+    public double[] feedbackControl(YouBot robot, double[][] X, double[][] Xd, double[][] XdNext, double[][] KpMatrix, double[][] KiMatrix, double dT, double[] currentConfig, double[] errorIntegral) {
     /*
     Inputs:
     - X: current actual end-effector configuration (Tse)
@@ -84,6 +82,7 @@ public class FeedbackControl {
         for (int i=0; i < xErr.length; i++) {
             errorIntegral[i] += Matrix.scalarArrayMultiplication(xErr, dT)[i];
         }
+        robot.errorIntegral = errorIntegral;
 
         // Feedforward reference twist
         matrixLog6Input = Matrix.matrixMultiplication(XdInv, XdNext);
@@ -108,7 +107,8 @@ public class FeedbackControl {
         double[] nextConfig = NextState.nextState(currentConfig, controls, dT, robot.MAX_SPEED);
         List<Integer> constrainJoints = testJointLimits(nextConfig, 2);
         double tolerance = 0.002;
-        if (constrainJoints.size() > 1) {
+        // TODO: Debug this part, doesn't seem to be constraining joints correctly
+        if (constrainJoints.size() > 0) {
             for (int joint : constrainJoints) {
                 Matrix.replaceColumnValues(Je, joint - 1, 0);
                 double[][] JePinv = Matrix.pseudoInvTol(Je, tolerance);

@@ -110,7 +110,7 @@ public class FeedbackControl {
         if (constrainJoints.size() > 0) {
             for (int joint : constrainJoints) {
                 Matrix.replaceColumnValues(Je, joint - 1, 0);
-                JePinv = Matrix.pseudoInvTol(Je, tolerance);
+                JePinv = Matrix.pseudoInverse(Je);
                 controlsArray = Matrix.matrixMultiplication(JePinv, Matrix.transposeArray(V));
                 controls = Matrix.flattenedMatrix(controlsArray);
             }

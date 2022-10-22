@@ -185,15 +185,15 @@ public class Matrix {
         /*
         Sets any values greater than the tolerance as zero, and returns the pseudo inverse of the matrix
          */
-        double[][] output = pseudoInverse(matrix);
+        double[][] pseudoInvTol = matrix.clone();
         for (int i=0; i < matrix.length; i++) {
             for (int j=0; j < matrix[0].length; j++) {
                 if (Math.abs(matrix[i][j]) < tolerance) {
-                    output[j][i] = 0;
+                    pseudoInvTol[i][j] = 0;
                 }
             }
         }
-        return output;
+        return pseudoInverse(pseudoInvTol);
     }
 
     public static double[][] scalarMultiplication(double[][] matrix, double scalarValue) {

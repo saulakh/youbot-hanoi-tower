@@ -3,7 +3,6 @@ import libraries.Robotics;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class PickAndPlace {
@@ -59,10 +58,7 @@ public class PickAndPlace {
         CSV.clearCSVFile(filePath);
 
         // Get SE(3) matrix for robot's initial position
-        double[][] chassisSE3 = traj.spaceToChassis(0,0,0);
-        double[][] endEffectorSE3 = traj.chassisToEndEffector(chassisSE3);
-
-        // TODO: Figure out whether to use endEffectorSE3 or robotInitial for trajectory
+        double[][] chassisSE3 = traj.spaceToChassis(robot.initialConfig[0],robot.initialConfig[1],robot.initialConfig[2]);
         double[][] T0e = Robotics.fkInBody(robot.M0e, robot.BList, robot.thetaList);
         double[][] robotInitial = Matrix.matrixMultiplication(chassisSE3, robot.Tb0);
         robotInitial = Matrix.matrixMultiplication(robotInitial, T0e);

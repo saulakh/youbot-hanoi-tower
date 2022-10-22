@@ -183,16 +183,17 @@ public class Matrix {
 
     public static double[][] pseudoInvTol(double[][] matrix, double tolerance) {
         /*
-        Replaces any values greater than the tolerance with the tolerance, and returns the pseudo inverse of the matrix
+        Sets any values greater than the tolerance as zero, and returns the pseudo inverse of the matrix
          */
+        double[][] output = pseudoInverse(matrix);
         for (int i=0; i < matrix.length; i++) {
             for (int j=0; j < matrix[0].length; j++) {
-                if (matrix[i][j] < tolerance) {
-                    matrix[i][j] = tolerance;
+                if (Math.abs(matrix[i][j]) < tolerance) {
+                    output[j][i] = 0;
                 }
             }
         }
-        return pseudoInverse(matrix);
+        return output;
     }
 
     public static double[][] scalarMultiplication(double[][] matrix, double scalarValue) {

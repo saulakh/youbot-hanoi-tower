@@ -41,8 +41,6 @@ public class PickAndPlace {
 
             // Get controls needed for NextState
             robot.currentControls = feedback.feedbackControl(robot, robot.X, robot.Xd, robot.XdNext, robot.KpMatrix, robot.KiMatrix, robot.DELTA_T, robot.currentConfig, robot.errorIntegral);
-            // TODO: Debug controls, these values aren't correct yet
-            System.out.println(Arrays.toString(robot.currentControls));
             double grip = trajMatrix[row][0][12];
 
             // Get next configuration and append to youBot CSV file

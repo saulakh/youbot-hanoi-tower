@@ -65,7 +65,7 @@ public class FeedbackControl {
     Outputs:
     - controls: 5 joint speeds and 4 wheel speeds needed to reach next position
      */
-        double[] thetaList = new double[] {0,0,0.2,-1.6,0};
+        double[] thetaList = Matrix.rangeFromArray(currentConfig, 3, 8);
         // Get end-effector configuration relative to base frame (for test input angles)
         double[][] T0e = Robotics.fkInBody(robot.M0e, robot.BList, thetaList);
         double[][] Je = jacobian(T0e, robot.F, robot.BList, thetaList);
@@ -99,19 +99,18 @@ public class FeedbackControl {
         double[] V = Matrix.arrayAddition(VdAdjoint, sumError);
 
         // Get controls and test joint limits
-        double[][] JeInv = Matrix.pseudoInverse(Je);
-        double[][] controlsArray = Matrix.matrixMultiplication(JeInv, Matrix.transposeArray(V));
+        double tolerance = 0.002;
+        double[][] JePinv = Matrix.pseudoInverse(Je);
+        double[][] controlsArray = Matrix.matrixMultiplication(JePinv, Matrix.transposeArray(V));
         double[] controls = Matrix.flattenedMatrix(controlsArray);
 
         // Check joint limits, and recalculate controls if needed
         double[] nextConfig = NextState.nextState(currentConfig, controls, dT, robot.MAX_SPEED);
         List<Integer> constrainJoints = testJointLimits(nextConfig, 2);
-        double tolerance = 0.002;
-        // TODO: Debug this part, doesn't seem to be constraining joints correctly
         if (constrainJoints.size() > 0) {
             for (int joint : constrainJoints) {
                 Matrix.replaceColumnValues(Je, joint - 1, 0);
-                double[][] JePinv = Matrix.pseudoInvTol(Je, tolerance);
+                JePinv = Matrix.pseudoInvTol(Je, tolerance);
                 controlsArray = Matrix.matrixMultiplication(JePinv, Matrix.transposeArray(V));
                 controls = Matrix.flattenedMatrix(controlsArray);
             }

@@ -82,6 +82,15 @@ public class MatrixTests {
         checkMatrixWithDelta(expected, actual, 0.0001);
     }
 
+    @Test
+    public void checkPseudoInvTol() {
+        double[][] testMatrix = new double[][] {{2,0}, {0,0.00001}};
+        double tolerance = 0.0001;
+        double[][] expected = new double[][] {{0.5,0}, {0,0}};
+        double[][] actual = Matrix.pseudoInvTol(testMatrix, tolerance);
+        checkMatrixWithDelta(expected, actual, 0.0001);
+    }
+
     public void checkMatrixWithDelta(double[][] expected, double[][] actual, double delta) {
         for (int i=0; i < actual.length; i++) {
             for (int j=0; j < actual[0].length; j++) {

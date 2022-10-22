@@ -3,6 +3,7 @@ import org.junit.Test;
 
 public class PickAndPlaceTests {
 
+    YouBot robot = new YouBot();
     PickAndPlace run = new PickAndPlace();
 
     @Test
@@ -12,7 +13,7 @@ public class PickAndPlaceTests {
                 {-0.01459976, 0.8660254, 0.4997868, 0.32375048},
                 {-0.9995736, 0.0, -0.02919952, 0.5264565},
                 {0.0, 0.0, 0.0, 1.0}};
-        double[][] actual = run.endEffectorSE3(flattenedConfig);
+        double[][] actual = robot.endEffectorSE3(flattenedConfig);
         checkMatrixWithDelta(expected, actual, 0.001);
     }
 

@@ -7,11 +7,12 @@ public class NextStateTests {
 
     @Test
     public void checkConfig() {
+        YouBot robot =  new YouBot();
         // Testing nextState method
         double[] expectedConfig = new double[] {0,0.00475,-4.34E-19,0.005,0.005,0.005,0.005,0.005,0.1,0.1,0.1,0.1,0};
         double[] initialConfig = new double[13];
         double[] controls = new double[] {0.5,0.5,0.5,0.5,0.5,10,10,10,10};
-        double[] nextConfig = NextState.nextState(initialConfig, controls, 0.01, 10);
+        double[] nextConfig = NextState.nextState(initialConfig, controls, robot.F, 0.01, 10);
         Assert.assertArrayEquals(expectedConfig, nextConfig, 0.0001);
     }
 
@@ -25,7 +26,7 @@ public class NextStateTests {
         CSV.clearCSVFile(nextStateCSVPath);
 
         for (int i=0; i < 101; i++) {
-            config = NextState.nextState(config, controls, robot.DELTA_T, robot.MAX_SPEED);
+            config = NextState.nextState(config, controls, robot.F, robot.DELTA_T, robot.MAX_SPEED);
             CSV.writeToCSV(nextStateCSVPath, config);
         }
 

@@ -99,13 +99,12 @@ public class FeedbackControl {
         double[] V = Matrix.arrayAddition(VdAdjoint, sumError);
 
         // Get controls and test joint limits
-        double tolerance = 0.002;
         double[][] JePinv = Matrix.pseudoInverse(Je);
         double[][] controlsArray = Matrix.matrixMultiplication(JePinv, Matrix.transposeArray(V));
         double[] controls = Matrix.flattenedMatrix(controlsArray);
 
         // Check joint limits, and recalculate controls if needed
-        double[] nextConfig = NextState.nextState(currentConfig, controls, dT, robot.MAX_SPEED);
+        double[] nextConfig = NextState.nextState(currentConfig, controls, robot.F, dT, robot.MAX_SPEED);
         List<Integer> constrainJoints = testJointLimits(nextConfig, 2);
         if (constrainJoints.size() > 0) {
             for (int joint : constrainJoints) {

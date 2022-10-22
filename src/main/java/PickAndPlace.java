@@ -43,13 +43,12 @@ public class PickAndPlace {
             double grip = trajMatrix[row][0][12];
 
             // Get next configuration and append to youBot CSV file
-            Matrix.replaceRangeFromArray(NextState.nextState(robot.currentConfig, robot.currentControls, robot.DELTA_T, robot.MAX_SPEED), robot.currentConfig, 0);
+            Matrix.replaceRangeFromArray(NextState.nextState(robot.currentConfig, robot.currentControls, robot.F, robot.DELTA_T, robot.MAX_SPEED), robot.currentConfig, 0);
             robot.currentConfig[12] = grip;
             CSV.writeToCSV(youBotPath, robot.currentConfig);
 
             // Set next configuration as X for next iteration
-            robot.X = endEffectorSE3(robot.currentConfig);
-
+            robot.X = robot.endEffectorSE3(robot.currentConfig);
         }
     }
 
@@ -58,13 +57,13 @@ public class PickAndPlace {
         CSV.clearCSVFile(filePath);
 
         // Get SE(3) matrix for robot's initial position
-        double[][] chassisSE3 = traj.spaceToChassis(robot.initialConfig[0],robot.initialConfig[1],robot.initialConfig[2]);
+        double[][] chassisSE3 = robot.spaceToChassis(robot.initialConfig[0],robot.initialConfig[1],robot.initialConfig[2]);
         double[][] T0e = Robotics.fkInBody(robot.M0e, robot.BList, robot.thetaList);
         double[][] robotInitial = Matrix.matrixMultiplication(chassisSE3, robot.Tb0);
         robotInitial = Matrix.matrixMultiplication(robotInitial, T0e);
 
         // Calculate full trajectory path
-        traj.motionPlanning(robotInitial, robot.cubeInitial, robot.cubeGoal);
+        traj.motionPlanning(robotInitial, robot.cubeInitial, robot.cubeGoal, robot.DELTA_T);
     }
 
     public double[][][] createTrajectoryMatrix(File trajectoryFile) {
@@ -82,19 +81,6 @@ public class PickAndPlace {
             System.out.println("Cannot open or read file.");
         }
         return trajectoryMatrix;
-    }
-
-    public double[][] endEffectorSE3(double[] config) {
-        /*
-        Returns SE(3) transformation matrix (Tse) from 13-vector of current configuration
-         */
-        double[] chassisConfig = Matrix.rangeFromArray(config, 0, 3);
-        double[] armConfig = Matrix.rangeFromArray(config, 3, 8);
-
-        double[][] Tsb = trajectory.spaceToChassis(chassisConfig[0], chassisConfig[1], chassisConfig[2]);
-        double[][] T0e = Robotics.fkInBody(robot.M0e, robot.BList, armConfig);
-        double[][] Ts0 = Matrix.matrixMultiplication(Tsb, robot.Tb0);
-        return Matrix.matrixMultiplication(Ts0, T0e);
     }
 
     public double[][] trajectoryToSE3(double[] flattenedTrajectory) {

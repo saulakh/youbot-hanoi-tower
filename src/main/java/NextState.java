@@ -19,7 +19,7 @@ public class NextState {
         return angles;
     }
 
-    public static double[] odometry(double[] chassisConfig, double[] dTheta) {
+    public static double[] odometry(double[] chassisConfig, double[][] F, double[] dTheta) {
         /*
          Inputs:
          - chassisConfig: current chassis state (phi,x,y)
@@ -27,10 +27,9 @@ public class NextState {
          Output:
          - chassisConfig: new chassis state (phi,x,y)
          */
-        YouBot youBot = new YouBot();
 
         // Body Twist
-        double[][] Vb = Matrix.matrixMultiplication(youBot.F, Matrix.transposeArray(dTheta));
+        double[][] Vb = Matrix.matrixMultiplication(F, Matrix.transposeArray(dTheta));
         assert Vb != null;
         double omegaBZ = Vb[0][0];
         double velBX = Vb[1][0];
@@ -69,7 +68,7 @@ public class NextState {
         }
     }
 
-    public static double[] nextState(double[] currentConfig, double[] controls, double dT, double maxSpeed) {
+    public static double[] nextState(double[] currentConfig, double[] controls, double[][] F, double dT, double maxSpeed) {
         /*
          Inputs:
          - currentConfig: 12-vector for current robot configuration (phi,x,y for chassis, 5 joint angles, and 4 wheel angles)
@@ -87,7 +86,7 @@ public class NextState {
         double[] dTheta = Matrix.scalarArrayMultiplication(Arrays.copyOfRange(controls, 5, 9), dT);
 
         // Update configuration with odometry and eulerStep
-        double[] newChassisConfig = odometry(chassisConfig, dTheta);
+        double[] newChassisConfig = odometry(chassisConfig, F, dTheta);
         double[] newAngles = eulerStep(angles, controls, dT);
         Matrix.replaceRangeFromArray(newChassisConfig, newState, 0);
         Matrix.replaceRangeFromArray(newAngles, newState, 3);

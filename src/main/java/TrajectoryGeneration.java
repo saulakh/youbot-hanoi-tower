@@ -3,19 +3,18 @@ import libraries.Robotics;
 
 public class TrajectoryGeneration {
 
-    YouBot robot = new YouBot();
-
-    public void getTrajectory(double[][] xStart, double[][] xEnd, int gripState, int Tf) {
+    public void getTrajectory(double[][] xStart, double[][] xEnd, int gripState, int Tf, double dT) {
         /*
          Inputs:
          - xStart: Starting end-effector Se3 configuration
          - xEnd: Goal end-effector Se3 configuration
          - gripState: Gripper state for this section of trajectory
          - Tf: total time of motion for this section (in seconds)
+         - dT: timestep Δt
          Output:
          - Appends flattened trajectory to csv file
          */
-        int N = (int)(Tf / robot.DELTA_T);
+        int N = (int)(Tf / dT);
         double[][][] trajectory = Robotics.screwTrajectory(xStart, xEnd, Tf, N, 3);
         String trajFilePath = "trajectory.csv";
 
@@ -59,36 +58,13 @@ public class TrajectoryGeneration {
         return Matrix.matrixMultiplication(cubeConfig, standoff);
     }
 
-    public double[][] chassisToEndEffector(double[][] Tsb) {
-        /*
-        Input:
-        - Tsb: Transformation matrix from space frame to chassis frame
-        Output:
-        - End effector configuration in the space frame, when all joint angles are zero
-         */
-        // Chassis frame to base frame of arm 0
-        double[][] Tb0 = {{1,0,0,0.1662},{0,1,0,0},{0,0,1,0.0026},{0,0,0,1}};
-        // End effector frame relative to base frame
-        double[][] M0e = {{1,0,0,0.033},{0,1,0,0},{0,0,1,0.6546},{0,0,0,1}};
-        // Initial configuration of end-effector
-        double[][] Ts0 = Matrix.matrixMultiplication(Tsb, Tb0);
-        assert Ts0 != null;
-        return Matrix.matrixMultiplication(Ts0, M0e);
-    }
-
-    public double[][] spaceToChassis(double phi, double x, double y) {
-        /*
-        Transformation matrix from space frame to chassis frame
-         */
-        return new double[][] {{Math.cos(phi),-Math.sin(phi),0,x},{Math.sin(phi),Math.cos(phi),0,y},{0,0,1,0.0963},{0,0,0,1}};
-    }
-
-    public void motionPlanning(double[][] robotInitial, double[][] cubeInitial, double[][] cubeFinal) {
+    public void motionPlanning(double[][] robotInitial, double[][] cubeInitial, double[][] cubeFinal, double dT) {
         /*
         Inputs:
         - robotInitial: End-effector configuration at robot's initial position
         - cubeInitial: Cube configuration at its initial position
         - cubeFinal: Cube configuration at its final position
+        - dT: timestep Δt
         Ouput:
         - Appends full trajectory to csv file, moving the cube from inital to goal position
          */
@@ -99,32 +75,32 @@ public class TrajectoryGeneration {
 
         // 1) Move gripper to standoff configuration over initial cube location
         double[][] standoffInitial = standoffPosition(cubeInitial, 3*Math.PI/4, 0.075);
-        getTrajectory(robotInitial, standoffInitial, gripState, moveToPositionTime);
+        getTrajectory(robotInitial, standoffInitial, gripState, moveToPositionTime, dT);
 
         // 2) Move gripper down to initial grasp position
         double[][] graspInitial = graspPosition(cubeInitial, 3*Math.PI/4);
-        getTrajectory(standoffInitial, graspInitial, gripState, lowerToGraspTime);
+        getTrajectory(standoffInitial, graspInitial, gripState, lowerToGraspTime, dT);
 
         // 3) Close gripper
         gripState = 1;
-        getTrajectory(graspInitial, graspInitial, gripState, gripperTime);
+        getTrajectory(graspInitial, graspInitial, gripState, gripperTime, dT);
 
         // 4) Move gripper back up to initial standoff configuration
-        getTrajectory(graspInitial, standoffInitial, gripState, lowerToGraspTime);
+        getTrajectory(graspInitial, standoffInitial, gripState, lowerToGraspTime, dT);
 
         // 5) Move gripper to standoff configuration over goal cube location
         double[][] standoffFinal = standoffPosition(cubeFinal, 3*Math.PI/4, 0.075);
-        getTrajectory(standoffInitial, standoffFinal, gripState, moveToPositionTime);
+        getTrajectory(standoffInitial, standoffFinal, gripState, moveToPositionTime, dT);
 
         // 6) Move gripper down to final grasp position
         double[][] graspFinal = graspPosition(cubeFinal, 3*Math.PI/4);
-        getTrajectory(standoffFinal, graspFinal, gripState, lowerToGraspTime);
+        getTrajectory(standoffFinal, graspFinal, gripState, lowerToGraspTime, dT);
 
         // 7) Open Gripper
         gripState = 0;
-        getTrajectory(graspFinal, graspFinal, gripState, gripperTime);
+        getTrajectory(graspFinal, graspFinal, gripState, gripperTime, dT);
 
         // 8) Move gripper back to final standoff configuration
-        getTrajectory(graspFinal, standoffFinal, gripState, lowerToGraspTime);
+        getTrajectory(graspFinal, standoffFinal, gripState, lowerToGraspTime, dT);
     }
 }

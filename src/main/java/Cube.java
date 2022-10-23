@@ -18,8 +18,6 @@ public class Cube {
         return goalConfig;
     }
 
-    // TODO: Use cube class instead, then delete these methods from trajectory generation
-
     public double[][] graspPosition(double[][] cubeConfig, double theta) {
         /*
         Returns end-effector grasp configuration, rotated about y-axis from cube position

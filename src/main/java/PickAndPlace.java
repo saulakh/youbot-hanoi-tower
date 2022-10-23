@@ -9,6 +9,7 @@ public class PickAndPlace {
 
     YouBot robot = new YouBot();
     String trajectoryPath = "trajectory.csv";
+    NextState nextState = new NextState(robot.DELTA_T, robot.MAX_SPEED, robot.F);
     TrajectoryGeneration trajectory = new TrajectoryGeneration();
     FeedbackControl feedback = new FeedbackControl();
     String youBotPath = "youBot.csv";
@@ -39,11 +40,11 @@ public class PickAndPlace {
             robot.XdNext = trajectoryToSE3(trajMatrix[row+1][0]);
 
             // Get controls needed for NextState
-            robot.currentControls = feedback.feedbackControl(robot, robot.X, robot.Xd, robot.XdNext, robot.KpMatrix, robot.KiMatrix, robot.DELTA_T, robot.currentConfig, robot.errorIntegral);
+            robot.currentControls = feedback.feedbackControl(robot, robot.X, robot.Xd, robot.XdNext, robot.currentConfig);
             double grip = trajMatrix[row][0][12];
 
             // Get next configuration and append to youBot CSV file
-            Matrix.replaceRangeFromArray(NextState.nextState(robot.currentConfig, robot.currentControls, robot.F, robot.DELTA_T, robot.MAX_SPEED), robot.currentConfig, 0);
+            Matrix.replaceRangeFromArray(nextState.getNextState(robot.currentConfig, robot.currentControls), robot.currentConfig, 0);
             robot.currentConfig[12] = grip;
             CSV.writeToCSV(youBotPath, robot.currentConfig);
 

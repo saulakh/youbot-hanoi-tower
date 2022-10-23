@@ -52,7 +52,7 @@ public class FeedbackControl {
         return constrainJoints;
     }
 
-    public double[] feedbackControl(YouBot robot, double[][] X, double[][] Xd, double[][] XdNext, double[][] KpMatrix, double[][] KiMatrix, double dT, double[] currentConfig, double[] errorIntegral) {
+    public double[] feedbackControl(YouBot robot, double[][] X, double[][] Xd, double[][] XdNext, double[] currentConfig) {
     /*
     Inputs:
     - X: current actual end-effector configuration (Tse)
@@ -80,21 +80,20 @@ public class FeedbackControl {
 
         // Error Integral is sum of all xErr * dT over time
         for (int i=0; i < xErr.length; i++) {
-            errorIntegral[i] += Matrix.scalarArrayMultiplication(xErr, dT)[i];
+            robot.errorIntegral[i] += Matrix.scalarArrayMultiplication(xErr, robot.DELTA_T)[i];
         }
-        robot.errorIntegral = errorIntegral;
 
         // Feedforward reference twist
         matrixLog6Input = Matrix.matrixMultiplication(XdInv, XdNext);
-        se3ToVecInput = Matrix.scalarMultiplication(matrixLog6Input, 1/dT);
+        se3ToVecInput = Matrix.scalarMultiplication(matrixLog6Input, 1/robot.DELTA_T);
         double[] Vd = Robotics.se3ToVec(se3ToVecInput);
         double[][] adjointInput = Matrix.matrixMultiplication(xInv, Xd);
         double[][] VdAdjointMatrix = Matrix.matrixMultiplication(Robotics.adjointMatrix(adjointInput), Matrix.transposeArray(Vd));
         double[] VdAdjoint = Matrix.flattenedMatrix(VdAdjointMatrix);
 
         // Get commanded end-effector twist V
-        double[][] KpError = Matrix.matrixMultiplication(KpMatrix, Matrix.transposeArray(xErr));
-        double[][] KiError = Matrix.matrixMultiplication(KiMatrix, Matrix.transposeArray(errorIntegral));
+        double[][] KpError = Matrix.matrixMultiplication(robot.KpMatrix, Matrix.transposeArray(xErr));
+        double[][] KiError = Matrix.matrixMultiplication(robot.KiMatrix, Matrix.transposeArray(robot.errorIntegral));
         double[] sumError = Matrix.arrayAddition(Matrix.flattenedMatrix(KpError), Matrix.flattenedMatrix(KiError));
         double[] V = Matrix.arrayAddition(VdAdjoint, sumError);
 
@@ -104,7 +103,8 @@ public class FeedbackControl {
         double[] controls = Matrix.flattenedMatrix(controlsArray);
 
         // Check joint limits, and recalculate controls if needed
-        double[] nextConfig = NextState.nextState(currentConfig, controls, robot.F, dT, robot.MAX_SPEED);
+        NextState nextState = new NextState(robot.DELTA_T, robot.MAX_SPEED, robot.F);
+        double[] nextConfig = nextState.getNextState(currentConfig, controls);
         List<Integer> constrainJoints = testJointLimits(nextConfig, 2);
         if (constrainJoints.size() > 0) {
             for (int joint : constrainJoints) {

@@ -26,21 +26,17 @@ public class FeedbackControlTests {
     @Test
     public void checkFeedbackControl() {
         double[] robotConfig = {0,0,0,0,0,0.2,-1.6,0,0,0,0,0,0};
-        double[] errorIntegral = {0,0,0,0,0,0};
-        double dT = 0.01;
 
         // Given Xd, Xd_next, X, Kp, Ki:
         double[][] Xd = {{0,0,1,0.5},{0,1,0,0},{-1,0,0,0.5},{0,0,0,1}};
         double[][] XdNext = {{0,0,1,0.6},{0,1,0,0},{-1,0,0,0.3},{0,0,0,1}};
         double[][] X = {{0.17,0,0.985,0.387},{0,1,0,0},{-0.985,0,0.17,0.57},{0,0,0,1}};
-        double[][] Kp = new double[6][6];
-        double[][] Ki = new double[6][6];
 
         // Expected value before recalculating controls:
         // double[] expected = {0, -653.192, 1399.261, -746.069, 0, 157.244, 157.244, 157.244, 157.244};
         // Updated value after recalculating controls:
         double[] expected = {0, -15, 15, -15, 0, 15, 15, 15, 15};
-        double[] actual = feedback.feedbackControl(robot, X, Xd, XdNext, Kp, Ki, dT, robotConfig, errorIntegral);
+        double[] actual = feedback.feedbackControl(robot, X, Xd, XdNext, robotConfig);
         Assert.assertArrayEquals(expected, actual, 0.001);
     }
 

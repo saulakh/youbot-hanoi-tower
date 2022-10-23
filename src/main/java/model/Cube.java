@@ -1,9 +1,11 @@
+package model;
+
 import libraries.Matrix;
 
 public class Cube {
 
-    private final double[] initialConfig;
-    private final double[] goalConfig;
+    private double[] initialConfig;
+    private double[] goalConfig;
 
     public Cube(double[] initialConfig, double[] goalConfig) {
         this.initialConfig = initialConfig;
@@ -14,11 +16,19 @@ public class Cube {
         return initialConfig;
     }
 
+    public void setInitialConfig(double[] initialConfig) {
+        this.initialConfig = initialConfig;
+    }
+
     public double[] getGoalConfig() {
         return goalConfig;
     }
 
-    public double[][] graspPosition(double[][] cubeConfig, double theta) {
+    public void setGoalConfig(double[] goalConfig) {
+        this.goalConfig = goalConfig;
+    }
+
+    public double[][] getGraspPosition(double[][] cubeConfig, double theta) {
         /*
         Returns end-effector grasp configuration, rotated about y-axis from cube position
          */
@@ -32,7 +42,7 @@ public class Cube {
         return Matrix.matrixMultiplication(cubeConfig, grasp);
     }
 
-    public double[][] standoffPosition(double[][] cubeConfig, double theta, double height) {
+    public double[][] getStandoffPosition(double[][] cubeConfig, double theta, double height) {
         /*
         Returns the end-effector standoff configuration, relative to cube position
          */

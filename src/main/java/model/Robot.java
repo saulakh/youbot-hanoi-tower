@@ -1,3 +1,5 @@
+package model;
+
 public class Robot {
 
     private double[] config;

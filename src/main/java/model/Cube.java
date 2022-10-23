@@ -4,31 +4,27 @@ import libraries.Matrix;
 
 public class Cube {
 
-    private double[] initialConfig;
-    private double[] goalConfig;
+    private final double[][] initialConfig;
+    private final double[][] goalConfig;
+    private final double theta;
+    private final double graspHeight;
 
-    public Cube(double[] initialConfig, double[] goalConfig) {
+    public Cube(double[][] initialConfig, double[][] goalConfig) {
         this.initialConfig = initialConfig;
         this.goalConfig = goalConfig;
+        this.theta = 3 * Math.PI / 4;
+        this.graspHeight = 0.075;
     }
 
-    public double[] getInitialConfig() {
+    public double[][] getInitialConfig() {
         return initialConfig;
     }
 
-    public void setInitialConfig(double[] initialConfig) {
-        this.initialConfig = initialConfig;
-    }
-
-    public double[] getGoalConfig() {
+    public double[][] getGoalConfig() {
         return goalConfig;
     }
 
-    public void setGoalConfig(double[] goalConfig) {
-        this.goalConfig = goalConfig;
-    }
-
-    public double[][] getGraspPosition(double[][] cubeConfig, double theta) {
+    public double[][] getGraspPosition(double[][] cubeConfig) {
         /*
         Returns end-effector grasp configuration, rotated about y-axis from cube position
          */
@@ -42,7 +38,7 @@ public class Cube {
         return Matrix.matrixMultiplication(cubeConfig, grasp);
     }
 
-    public double[][] getStandoffPosition(double[][] cubeConfig, double theta, double height) {
+    public double[][] getStandoffPosition(double[][] cubeConfig) {
         /*
         Returns the end-effector standoff configuration, relative to cube position
          */
@@ -51,7 +47,7 @@ public class Cube {
         // Change end-effector orientation
         Matrix.replaceRangeFromMatrix(rotY, standoff, 0, 0);
         // Standoff at desired distance above cube (in meters)
-        standoff[2][3] += height;
+        standoff[2][3] += graspHeight;
         return Matrix.matrixMultiplication(cubeConfig, standoff);
     }
 }

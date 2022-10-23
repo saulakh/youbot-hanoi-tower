@@ -20,10 +20,13 @@ public class NextState {
         this.F = FMatrix;
     }
 
+    /**
+     * Returns the 5 joint angles and 4 wheel angles from the current robot configuration
+     * @param config 12-vector for current robot configuration (phi,x,y for chassis, 5 joint angles, and 4 wheel angles)
+     * @return angles : 9-vector of 5 joint arm angles, and 4 wheel angles from the input configuration
+     */
     private double[] getAngles(double[] config) {
-        /*
-        Returns the 5 joint arm angles, and 4 wheel angles from the input configuration
-         */
+
         return Matrix.rangeFromArray(config, 3, 12);
     }
 
@@ -76,7 +79,7 @@ public class NextState {
     /**
      * Returns the change in chassis coordinates relative to the body frame
      * @param controls 9-vector of controls indicating the 5 joint speeds theta_dot and the 4 wheel speeds u
-     * @return deltaQb : (ΔomegaBz, ΔVbx, ΔVby)
+     * @return deltaQb : (ΔOmegaBz, ΔVbx, ΔVby)
      */
     private double[][] getDeltaQbMatrix(double[] controls) {
 

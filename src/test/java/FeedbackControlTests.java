@@ -1,42 +1,30 @@
-import libraries.Matrix;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class FeedbackControlTests {
 
     YouBot robot = new YouBot();
-    FeedbackControl feedback = new FeedbackControl();
-
-    double[] testConfig = new double[] {0,0,0,0,0,0.2,-1.6,0,0,0,0,0,0};
-    double[] thetaList = Matrix.rangeFromArray(testConfig, 3, 8);
-    double[][] T0e = new double[][] {{0.16996714, 0, 0.98544973, 0.2206135},{0,1,0,0},{-0.98544973, 0, 0.16996714, 0.47129384},{0,0,0,1}};
+    FeedbackControl feedback = new FeedbackControl(robot);
 
     @Test
     public void checkJacobian() {
-        double[][] expected = new double[][] {{-0.98544973, 0, 0, 0, 0, 0.03039537, -0.03039537, -0.03039537, 0.03039537},
-                {0, -1, -1, -1, 0, 0, 0, 0, 0},
-                {0.16996714, 0, 0, 0, 1, -0.00524249, 0.00524249, 0.00524249, -0.00524249},
-                {0, -0.24000297, -0.21365806, -0.2176, 0, 0.00201836, 0.00201836, 0.00201836, 0.00201836},
-                {0.2206135, 0, 0, 0, 0, -0.01867964, 0.01867964, -0.00507036, 0.00507036},
-                {0, -0.28768714, -0.13494244, 0, 0, 0.01170222, 0.01170222, 0.01170222, 0.01170222}};
-        double[][] actual = feedback.jacobian(T0e, robot.F, robot.BList, thetaList);
+        double[][] expected = new double[][] {{-0.9995736030415051, 0.0, 0.0, 0.0, 0.0, 0.030831003989916554, -0.030831003989916554, -0.030831003989916554, 0.030831003989916554},
+                {0.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+                {-0.029199522301288888, 0.0, 0.0, 0.0, 1.0, 9.006346164358577E-4, -9.006346164358577E-4, -9.006346164358577E-4, 9.006346164358577E-4},
+                {0.0, -0.24000297163886333, -0.213658064489326, -0.2176, 0.0, -3.467443273278053E-4, -3.467443273278053E-4, -3.467443273278053E-4, -3.467443273278053E-4},
+                {0.281300962295066, 0.0, 0.0, 0.0, 0.0, -0.020551490720140023, 0.020551490720140023, -0.0031985092798599724, 0.0031985092798599724},
+                {0.0, -0.28768714455881456, -0.13494243641060316, 0.0, 0.0, 0.011869936536117873, 0.011869936536117873, 0.011869936536117873, 0.011869936536117873}};
+        double[][] actual = feedback.getFullJacobian();
         checkMatrixWithDelta(expected, actual, 0.001);
     }
 
     @Test
     public void checkFeedbackControl() {
-        double[] robotConfig = {0,0,0,0,0,0.2,-1.6,0,0,0,0,0,0};
-
-        // Given Xd, Xd_next, X, Kp, Ki:
-        double[][] Xd = {{0,0,1,0.5},{0,1,0,0},{-1,0,0,0.5},{0,0,0,1}};
-        double[][] XdNext = {{0,0,1,0.6},{0,1,0,0},{-1,0,0,0.3},{0,0,0,1}};
-        double[][] X = {{0.17,0,0.985,0.387},{0,1,0,0},{-0.985,0,0.17,0.57},{0,0,0,1}};
-
         // Expected value before recalculating controls:
         // double[] expected = {0, -653.192, 1399.261, -746.069, 0, 157.244, 157.244, 157.244, 157.244};
         // Updated value after recalculating controls:
-        double[] expected = {0, -15, 15, -15, 0, 15, 15, 15, 15};
-        double[] actual = feedback.feedbackControl(robot, X, Xd, XdNext, robotConfig);
+        double[] expected = {0, -15, 15, -15, 0, -15, -15, -15, -15};
+        double[] actual = feedback.feedbackControl(robot.X, robot.Xd, robot.XdNext, robot.currentConfig);
         Assert.assertArrayEquals(expected, actual, 0.001);
     }
 

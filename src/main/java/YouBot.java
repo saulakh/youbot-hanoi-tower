@@ -27,7 +27,6 @@ public class YouBot {
     // Initial youBot configuration (phi,x,y,J1,J2,J3,J4,J5,W1,W2,W3,W4,gripper)
     double[] initialConfig = new double[] {PI/6,-0.1,0.1,0,-0.2,0.2,-1.6,0,0,0,0,0,0};
     double[] currentConfig = initialConfig;
-    double[] thetaList = Matrix.rangeFromArray(currentConfig, 3, 8);
     double[] currentControls = new double[9]; // 5 joint speeds, 4 wheel speeds (rad/s)
 
     // Tb0: fixed offset from chassis frame to base frame of the arm

@@ -20,7 +20,7 @@ public class PickAndPlace {
         this.nextState = new NextState(robot.DELTA_T, robot.MAX_SPEED, robot.F);
         Cube cube = new Cube(robot.cubeInitial, robot.cubeGoal);
         this.trajectory = new TrajectoryGeneration(robot.endEffectorSE3(robot.initialConfig), cube, robot.DELTA_T);
-        this.feedback = new FeedbackControl();
+        this.feedback = new FeedbackControl(this.robot);
         this.youBotPath = "youBot.csv";
     }
 
@@ -35,7 +35,7 @@ public class PickAndPlace {
             robot.XdNext = trajectoryToSE3(trajMatrix[row+1][0]);
 
             // Get controls needed for NextState
-            robot.currentControls = feedback.feedbackControl(robot, robot.X, robot.Xd, robot.XdNext, robot.currentConfig);
+            robot.currentControls = feedback.feedbackControl(robot.X, robot.Xd, robot.XdNext, robot.currentConfig);
             double grip = trajMatrix[row][0][12];
 
             // Get next configuration and append to youBot CSV file

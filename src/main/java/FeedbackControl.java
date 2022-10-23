@@ -6,36 +6,86 @@ import java.util.List;
 
 public class FeedbackControl {
 
-    public double[][] jacobian(double[][] T0e, double[][] F, double[][] BList, double[] thetaList) {
-        /*
-        Inputs:
-        - T0e: transformation matrix from base to end-effector
-        - F: psuedoinverse of chassis kinematic model H(0)
-        - BList: screw axes when arm is at home configuration
-        - thetaList: list of 5 joint angles for arm configuration
-        Output:
-        - fullJacobian: Full Jacobian matrix (armJacobian, baseJacobian) to match order of controls and config
-         */
-        double[][] Te0 = Matrix.inverseMatrix(T0e);
-        double[][] Te0Adjoint = Robotics.adjointMatrix(Te0);
+    private final YouBot robot;
 
-        // Build F6 matrix
-        int m = F[0].length;
+    public FeedbackControl(YouBot youBot) {
+        this.robot = youBot;
+    }
+
+    /**
+     * Returns an array of 5 joint angles from the current robot configuration
+     * @return thetaList : array of 5 joint angles for robot arm configuration
+     */
+    public double[] getThetaList() {
+        return Matrix.rangeFromArray(robot.currentConfig, 3, 8);
+    }
+
+    /**
+     * Returns the transformation matrix from base to end-effector using forward kinematics
+     * @return T0e : base to end-effector transformation matrix (SE3)
+     */
+    public double[][] getT0e() {
+        return Robotics.fkInBody(robot.M0e, robot.BList, getThetaList());
+    }
+
+    /**
+     * Returns the F6 matrix, with two rows of m zeros stacked above F and one row below it. The F matrix is the
+     * 3 x m pseudo inverse of the chassis kinematic model H(θ)
+     * @return F6Matrix : 6 x m matrix used to create a six-dimensional twist Vb6 corresponding to planar twist Vb,
+     * where m is the number of columns from the F matrix
+     */
+    public double[][] getF6Matrix() {
+        int m = robot.F[0].length;
         double[][] F6Matrix = new double[6][m];
-        Matrix.replaceRangeFromMatrix(F, F6Matrix, 2, 0);
+        Matrix.replaceRangeFromMatrix(robot.F, F6Matrix, 2, 0);
+        return F6Matrix;
+    }
 
-        // Get full Jacobian matrix
-        double[][] baseJacobian = Matrix.matrixMultiplication(Te0Adjoint, F6Matrix);
-        double[][] armJacobian = Robotics.jacobianBody(BList, thetaList);
+    /**
+     * Returns the body Jacobian matrix J_arm(θ), which represents the relationship between
+     * the joint rates and the end-effector's twist expressed in the fixed space-frame coordinates
+     * @return armJacobian : the Jacobian in the end-effector (or body-) frame coordinates, expressing the
+     * contribution of joint velocities to the end-effector's velocity
+     */
+    public double[][] getArmJacobian() {
+        return Robotics.jacobianBody(robot.BList, getThetaList());
+    }
 
-        // Concatenate [armJacobian, baseJacobian] to match order of controls and config
+    /**
+     * Returns the base Jacobian matrix J_base(θ), which represents the relationship between the wheel speeds and the
+     * end-effector's twist expressed in the fixed space-frame coordinates
+     * @return baseJacobian : the base Jacobian, expressing the contribution of the wheeled velocities u to
+     * the end-effector's velocity
+     */
+    public double[][] getBaseJacobian() {
+        double[][] Te0 = Matrix.inverseMatrix(getT0e());
+        double[][] Te0Adjoint = Robotics.adjointMatrix(Te0);
+        double[][] F6Matrix = getF6Matrix();
+
+        return Matrix.matrixMultiplication(Te0Adjoint, F6Matrix);
+    }
+
+    /**
+     * Concatenates the arm Jacobian and base Jacobian to get the full Jacobian Je(θ)
+     * @return fullJacobian : complete Jacobian matrix representing the wheel and joint velocities, used for
+     * kinematic control of the end-effector frame in the fixed space-frame coordinates
+     */
+    public double[][] getFullJacobian() {
+        double[][] armJacobian = getArmJacobian();
+        double[][] baseJacobian = getBaseJacobian();
         double[][] fullJacobian = new double[6][baseJacobian[0].length + armJacobian[0].length];
+
         Matrix.replaceRangeFromMatrix(armJacobian, fullJacobian, 0, 0);
         Matrix.replaceRangeFromMatrix(baseJacobian, fullJacobian, 0, armJacobian[0].length);
-
         return fullJacobian;
     }
 
+    /**
+     * Returns a list of joint angles that exceed joint limits
+     * @param currentConfig robot configuration (phi,x,y,J1,J2,J3,J4,J5,W1,W2,W3,W4)
+     * @param jointMax maximum joint angle (in radians)
+     * @return constrainJoints : list of joint numbers (1 - 5) that need to be constrained
+     */
     public List<Integer> testJointLimits(double[] currentConfig, double jointMax) {
         /*
         Returns a list of joint angles that exceed joint limits
@@ -52,7 +102,7 @@ public class FeedbackControl {
         return constrainJoints;
     }
 
-    public double[] feedbackControl(YouBot robot, double[][] X, double[][] Xd, double[][] XdNext, double[] currentConfig) {
+    public double[] feedbackControl(double[][] X, double[][] Xd, double[][] XdNext, double[] currentConfig) {
     /*
     Inputs:
     - X: current actual end-effector configuration (Tse)
@@ -65,10 +115,7 @@ public class FeedbackControl {
     Outputs:
     - controls: 5 joint speeds and 4 wheel speeds needed to reach next position
      */
-        double[] thetaList = Matrix.rangeFromArray(currentConfig, 3, 8);
-        // Get end-effector configuration relative to base frame (for test input angles)
-        double[][] T0e = Robotics.fkInBody(robot.M0e, robot.BList, thetaList);
-        double[][] Je = jacobian(T0e, robot.F, robot.BList, thetaList);
+        double[][] Je = getFullJacobian();
 
         double[][] xInv = Matrix.inverseMatrix(X);
         double[][] XdInv = Matrix.inverseMatrix(Xd);

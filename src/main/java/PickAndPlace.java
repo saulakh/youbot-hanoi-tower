@@ -35,12 +35,11 @@ public class PickAndPlace {
             robot.XdNext = trajectoryToSE3(trajMatrix[row+1][0]);
 
             // Get controls needed for NextState
-            robot.currentControls = feedback.feedbackControl(robot.X, robot.Xd, robot.XdNext, robot.currentConfig);
-            double grip = trajMatrix[row][0][12];
+            robot.currentControls = feedback.getControls();
 
             // Get next configuration and append to youBot CSV file
             Matrix.replaceRangeFromArray(nextState.getNextState(robot.currentConfig, robot.currentControls), robot.currentConfig, 0);
-            robot.currentConfig[12] = grip;
+            robot.currentConfig[12] = trajMatrix[row][0][12];
             CSV.writeToCSV(youBotPath, robot.currentConfig);
 
             // Set next configuration as X for next iteration

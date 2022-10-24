@@ -16,7 +16,7 @@ public class FeedbackControl {
      * Returns an array of 5 joint angles from the current robot configuration
      * @return thetaList : array of 5 joint angles for robot arm configuration
      */
-    public double[] getThetaList() {
+    private double[] getThetaList() {
         return Matrix.rangeFromArray(robot.currentConfig, 3, 8);
     }
 
@@ -24,17 +24,15 @@ public class FeedbackControl {
      * Returns the transformation matrix from base to end-effector using forward kinematics
      * @return T0e : base to end-effector transformation matrix (SE3)
      */
-    public double[][] getT0e() {
+    private double[][] getT0e() {
         return Robotics.fkInBody(robot.M0e, robot.BList, getThetaList());
     }
 
     /**
-     * Returns the F6 matrix, with two rows of m zeros stacked above F and one row below it. The F matrix is the
-     * 3 x m pseudo inverse of the chassis kinematic model H(θ)
-     * @return F6Matrix : 6 x m matrix used to create a six-dimensional twist Vb6 corresponding to planar twist Vb,
-     * where m is the number of columns from the F matrix
+     * Returns the F6 matrix, using the (3xm) F matrix (pseudo-inverse of the chassis kinematic model H(θ))
+     * @return F6Matrix : 6 x m matrix with two rows of m zeros stacked above F and one row below it
      */
-    public double[][] getF6Matrix() {
+    private double[][] getF6Matrix() {
         int m = robot.F[0].length;
         double[][] F6Matrix = new double[6][m];
         Matrix.replaceRangeFromMatrix(robot.F, F6Matrix, 2, 0);
@@ -47,7 +45,7 @@ public class FeedbackControl {
      * @return armJacobian : the Jacobian in the end-effector (or body-) frame coordinates, expressing the
      * contribution of joint velocities to the end-effector's velocity
      */
-    public double[][] getArmJacobian() {
+    private double[][] getArmJacobian() {
         return Robotics.jacobianBody(robot.BList, getThetaList());
     }
 
@@ -57,7 +55,7 @@ public class FeedbackControl {
      * @return baseJacobian : the base Jacobian, expressing the contribution of the wheeled velocities u to
      * the end-effector's velocity
      */
-    public double[][] getBaseJacobian() {
+    private double[][] getBaseJacobian() {
         double[][] Te0 = Matrix.inverseMatrix(getT0e());
         double[][] Te0Adjoint = Robotics.adjointMatrix(Te0);
         double[][] F6Matrix = getF6Matrix();
@@ -86,7 +84,7 @@ public class FeedbackControl {
      * @param jointMax maximum joint angle (in radians)
      * @return constrainJoints : list of joint numbers (1 - 5) that need to be constrained
      */
-    public List<Integer> testJointLimits(double[] currentConfig, double jointMax) {
+    private List<Integer> testJointLimits(double[] currentConfig, double jointMax) {
         /*
         Returns a list of joint angles that exceed joint limits
          */
@@ -102,56 +100,63 @@ public class FeedbackControl {
         return constrainJoints;
     }
 
-    public double[] feedbackControl(double[][] X, double[][] Xd, double[][] XdNext, double[] currentConfig) {
-    /*
-    Inputs:
-    - X: current actual end-effector configuration (Tse)
-    - Xd: current end-effector reference configuration Xd (Tse_d)
-    - XdNext: reference configuration at next timestep in ref trajectory
-    - KpMatrix, KiMatrix: PI gain matrices
-    - dT: timestep between ref trajectory configurations
-    - currentConfig: (phi,x,y,J1,J2,J3,J4,J5,W1,W2,W3,W4)
-    - errorIntegral: sum of all error twists over time
-    Outputs:
-    - controls: 5 joint speeds and 4 wheel speeds needed to reach next position
+    /**
+     * Returns the error twist xErr = log (xInv * Xd)
+     * @return xErr : error twist between the current and reference positions
      */
-        double[][] Je = getFullJacobian();
-
-        double[][] xInv = Matrix.inverseMatrix(X);
-        double[][] XdInv = Matrix.inverseMatrix(Xd);
-
-        // Error twist between current and reference state
-        double[][] matrixLog6Input = Matrix.matrixMultiplication(xInv, Xd);
+    private double[] getErrorTwist() {
+        double[][] matrixLog6Input = Matrix.matrixMultiplication(Matrix.inverseMatrix(robot.X), robot.Xd);
         double[][] se3ToVecInput = Robotics.matrixLog6(matrixLog6Input);
-        double[] xErr = Robotics.se3ToVec(se3ToVecInput);
+        return Robotics.se3ToVec(se3ToVecInput);
+    }
 
+    /**
+     * Calculates the feedforward reference twist that takes the end-effector position from Xd to XdNext in time Δt,
+     * using Vd = (1 / Δt) log (XdInv * XdNext)
+     * @return VdAdjoint : Adjoint representation of the feedforward reference twist Vd
+     */
+    private double[] getFeedForwardTwist() {
+
+        double[][] matrixLog6Input = Matrix.matrixMultiplication(Matrix.inverseMatrix(robot.Xd), robot.XdNext);
+        double[][] se3ToVecInput = Matrix.scalarMultiplication(matrixLog6Input, 1/robot.DELTA_T);
+        double[] Vd = Robotics.se3ToVec(se3ToVecInput);
+
+        double[][] adjointInput = Matrix.matrixMultiplication(Matrix.inverseMatrix(robot.X), robot.Xd);
+        double[][] VdAdjointMatrix = Matrix.matrixMultiplication(Robotics.adjointMatrix(adjointInput), Matrix.transposeArray(Vd));
+        return Matrix.flattenedMatrix(VdAdjointMatrix);
+    }
+
+    /**
+     * Returns the commanded end-effector twist, using feedforward plus PI feedback control
+     * @return V : Commanded end-effector twist, expressed in the end-effector frame
+     */
+    private double[] getCommandedTwist() {
+        double[] xErr = getErrorTwist();
         // Error Integral is sum of all xErr * dT over time
         for (int i=0; i < xErr.length; i++) {
             robot.errorIntegral[i] += Matrix.scalarArrayMultiplication(xErr, robot.DELTA_T)[i];
         }
-
-        // Feedforward reference twist
-        matrixLog6Input = Matrix.matrixMultiplication(XdInv, XdNext);
-        se3ToVecInput = Matrix.scalarMultiplication(matrixLog6Input, 1/robot.DELTA_T);
-        double[] Vd = Robotics.se3ToVec(se3ToVecInput);
-        double[][] adjointInput = Matrix.matrixMultiplication(xInv, Xd);
-        double[][] VdAdjointMatrix = Matrix.matrixMultiplication(Robotics.adjointMatrix(adjointInput), Matrix.transposeArray(Vd));
-        double[] VdAdjoint = Matrix.flattenedMatrix(VdAdjointMatrix);
-
-        // Get commanded end-effector twist V
         double[][] KpError = Matrix.matrixMultiplication(robot.KpMatrix, Matrix.transposeArray(xErr));
         double[][] KiError = Matrix.matrixMultiplication(robot.KiMatrix, Matrix.transposeArray(robot.errorIntegral));
         double[] sumError = Matrix.arrayAddition(Matrix.flattenedMatrix(KpError), Matrix.flattenedMatrix(KiError));
-        double[] V = Matrix.arrayAddition(VdAdjoint, sumError);
+        return Matrix.arrayAddition(getFeedForwardTwist(), sumError);
+    }
 
-        // Get controls and test joint limits
+    /**
+     * Returns the controls needed for the commanded twist V
+     * @return controls : 9-vector of controls indicating the 5 joint speeds theta_dot and the 4 wheel speeds u
+     */
+    public double[] getControls() {
+        double[][] Je = getFullJacobian();
+        double[] V = getCommandedTwist();
+
         double[][] JePinv = Matrix.pseudoInverse(Je);
         double[][] controlsArray = Matrix.matrixMultiplication(JePinv, Matrix.transposeArray(V));
         double[] controls = Matrix.flattenedMatrix(controlsArray);
 
         // Check joint limits, and recalculate controls if needed
         NextState nextState = new NextState(robot.DELTA_T, robot.MAX_SPEED, robot.F);
-        double[] nextConfig = nextState.getNextState(currentConfig, controls);
+        double[] nextConfig = nextState.getNextState(robot.currentConfig, controls);
         List<Integer> constrainJoints = testJointLimits(nextConfig, 2);
         if (constrainJoints.size() > 0) {
             for (int joint : constrainJoints) {
@@ -161,7 +166,6 @@ public class FeedbackControl {
                 controls = Matrix.flattenedMatrix(controlsArray);
             }
         }
-
         return controls;
     }
 }

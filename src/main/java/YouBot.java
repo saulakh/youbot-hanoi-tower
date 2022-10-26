@@ -37,8 +37,12 @@ public class YouBot {
     double[][] BList = Matrix.transposeMatrix(new double[][] {{0,0,1,0,0.033,0},{0,-1,0,-0.5076,0,0},{0,-1,0,-0.3526,0,0},{0,-1,0,-0.2176,0,0},{0,0,1,0,0,0}});
 
     // Initial and goal configurations of cube
-    double[][] cubeInitial = new double[][] {{1,0,0,1},{0,1,0,0},{0,0,1,0.025},{0,0,0,1}};
-    double[][] cubeGoal = new double[][] {{0,1,0,0},{-1,0,0,-1},{0,0,1,0.025},{0,0,0,1}};
+    //double[][] cubeInitial = new double[][] {{1,0,0,1},{0,1,0,0},{0,0,1,0.025},{0,0,0,1}};
+    //double[][] cubeGoal = new double[][] {{0,1,0,0},{-1,0,0,-1},{0,0,1,0.025},{0,0,0,1}};
+    double[][] cubeInitial = new double[][] {{1,0,0,0.75},{0,1,0,0},{0,0,1,0.15},{0,0,0,1}};
+    double[][] cubeGoal = new double[][] {{0,1,0,-0.75*Math.cos(Math.PI/3)},{-1,0,0,-0.75*Math.sin(Math.PI/3)},{0,0,1,0.025},{0,0,0,1}};
+    double[][] cube2Initial = new double[][] {{1,0,0,0.75},{0,1,0,-0.025},{0,0,1,0.10},{0,0,0,1}};
+    double[][] cube2Goal = new double[][] {{0,1,0,-0.75*Math.cos(Math.PI/3)},{-1,0,0,-0.75*Math.sin(Math.PI/3)},{0,0,1,0.025},{0,0,0,1}};
 
     // Kp and Ki gains
     int KpGain = 5;

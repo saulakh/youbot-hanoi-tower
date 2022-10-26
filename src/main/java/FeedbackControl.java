@@ -81,20 +81,16 @@ public class FeedbackControl {
     /**
      * Returns a list of joint angles that exceed joint limits
      * @param currentConfig robot configuration (phi,x,y,J1,J2,J3,J4,J5,W1,W2,W3,W4)
-     * @param jointMax maximum joint angle (in radians)
      * @return constrainJoints : list of joint numbers (1 - 5) that need to be constrained
      */
-    private List<Integer> testJointLimits(double[] currentConfig, double jointMax) {
-        /*
-        Returns a list of joint angles that exceed joint limits
-         */
+    private List<Integer> testJointLimits(double[] currentConfig) {
         List<Integer> constrainJoints = new ArrayList<>();
         double theta3 = currentConfig[5];
         double theta4 = currentConfig[6];
-        if (theta3 < -jointMax || theta3 > jointMax) {
+        if (theta3 < -2 || theta3 > 2) {
             constrainJoints.add(3);
         }
-        if (theta4 < -jointMax || theta4 > jointMax) {
+        if (theta4 < -2 || theta4 > 2) {
             constrainJoints.add(4);
         }
         return constrainJoints;
@@ -157,7 +153,7 @@ public class FeedbackControl {
         // Check joint limits, and recalculate controls if needed
         NextState nextState = new NextState(robot.DELTA_T, robot.MAX_SPEED, robot.F);
         double[] nextConfig = nextState.getNextState(robot.currentConfig, controls);
-        List<Integer> constrainJoints = testJointLimits(nextConfig, 2);
+        List<Integer> constrainJoints = testJointLimits(nextConfig);
         if (constrainJoints.size() > 0) {
             for (int joint : constrainJoints) {
                 Matrix.replaceColumnValues(Je, joint - 1, 0);

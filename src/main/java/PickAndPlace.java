@@ -9,27 +9,23 @@ public class PickAndPlace {
     private final FeedbackControl feedback;
     private final String youBotPath;
 
-    public static void main(String[] args) {
-
-        PickAndPlace main = new PickAndPlace();
-        main.getConfigsFromTrajectory();
-    }
-
-    public PickAndPlace() {
-        this.robot = new YouBot();
+    public PickAndPlace(YouBot robot, Cube cube) {
+        this.robot = robot;
         this.nextState = new NextState(robot.DELTA_T, robot.MAX_SPEED, robot.F);
-        Cube cube = new Cube(robot.cubeInitial, robot.cubeGoal);
-        this.trajectory = new TrajectoryGeneration(robot.endEffectorSE3(robot.initialConfig), cube, robot.DELTA_T);
-        this.feedback = new FeedbackControl(this.robot);
+        //Cube cube = new Cube(robot.cubeInitial, robot.cubeGoal);
+        this.trajectory = new TrajectoryGeneration(robot, cube);
+        this.feedback = new FeedbackControl(robot);
         this.youBotPath = "youBot.csv";
     }
 
+    /**
+     * Loops through end-effector trajectory, calculates controls for joints and wheels, and appends configs to youBot CSV
+     */
     public void getConfigsFromTrajectory() {
 
-        CSV.clearCSVFile(youBotPath);
+        //CSV.clearCSVFile(youBotPath);
         double[][][] trajMatrix = trajectory.getTrajectoryMatrix();
 
-        // Loop through trajectory, calculate controls, and append configs to youBot CSV
         for (int row=0; row < trajMatrix.length - 1; row++) {
             robot.Xd = trajectoryToSE3(trajMatrix[row][0]);
             robot.XdNext = trajectoryToSE3(trajMatrix[row+1][0]);
@@ -47,10 +43,13 @@ public class PickAndPlace {
         }
     }
 
+    /**
+     * Returns SE(3) transformation matrix from flattened trajectory
+     * @param flattenedTrajectory Flattened SE(3) matrix representing the end-effector position in the world frame
+     * @return SE(3) transformation matrix representing the same end-effector position
+     */
     public double[][] trajectoryToSE3(double[] flattenedTrajectory) {
-        /*
-        Returns SE(3) transformation matrix from flattened trajectory
-         */
+
         double[] rot = Matrix.rangeFromArray(flattenedTrajectory, 0, 9);
         double[][] rotMatrix = Matrix.reshapeArray(rot, 3, 3);
         double[] pos = Matrix.rangeFromArray(flattenedTrajectory, 9, 12);

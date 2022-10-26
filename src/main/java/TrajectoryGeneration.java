@@ -15,18 +15,12 @@ public class TrajectoryGeneration {
     private final double dT;
     private final String trajectoryPath;
 
-    /**
-     *
-     * @param robotInitial End-effector configuration at robot's initial position (SE3)
-     * @param cube Cube with its initial and goal positions (SE3)
-     * @param dT time step Δt (in seconds)
-     */
-    public TrajectoryGeneration(double[][] robotInitial, Cube cube, double dT) {
-        this.robotInitial = robotInitial;
+    public TrajectoryGeneration(YouBot robot, Cube cube) {
+        this.robotInitial = robot.endEffectorSE3(robot.currentConfig);
         this.cube = cube;
         this.cubeInitial = cube.getInitialConfig();
         this.cubeGoal = cube.getGoalConfig();
-        this.dT = dT;
+        this.dT = robot.DELTA_T;
         this.trajectoryPath = "trajectory.csv";
     }
 

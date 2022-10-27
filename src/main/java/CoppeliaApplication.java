@@ -1,5 +1,7 @@
 import model.Cube;
 
+import java.util.List;
+
 public class CoppeliaApplication {
 
     private final String trajectoryPath;
@@ -10,7 +12,7 @@ public class CoppeliaApplication {
         CoppeliaApplication main = new CoppeliaApplication();
 
         CSV.clearCSVFile(main.youBotPath);
-        main.run();
+        main.processTaskList();
     }
 
     public CoppeliaApplication() {
@@ -18,18 +20,13 @@ public class CoppeliaApplication {
         this.youBotPath = "youBot.csv";
     }
 
-    public void run() {
-        YouBot youBot = new YouBot();
-        Cube cube1 = new Cube(youBot.cubeInitial, youBot.cubeGoal);
-        Cube cube2 = new Cube(youBot.cube2Initial, youBot.cube2Goal);
+    public void processTaskList() {
+        List<Cube> taskList = new HanoiTower().getTaskList();
 
-        // TODO: Create List<PickAndPlace> or a way to run each motion
-        CSV.clearCSVFile(trajectoryPath);
-        PickAndPlace pickAndPlace1 = new PickAndPlace(youBot, cube1);
-        pickAndPlace1.getConfigsFromTrajectory();
-
-//        CSV.clearCSVFile(trajectoryPath);
-//        PickAndPlace pickAndPlace2 = new PickAndPlace(youBot, cube2);
-//        pickAndPlace2.getConfigsFromTrajectory();
+        for (Cube cube : taskList) {
+            CSV.clearCSVFile(trajectoryPath);
+            PickAndPlace task = new PickAndPlace(new YouBot(), cube);
+            task.getConfigsFromTrajectory();
+        }
     }
 }

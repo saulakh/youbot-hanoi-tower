@@ -1,12 +1,9 @@
-import model.Cube;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class PickAndPlaceTests {
 
     YouBot robot = new YouBot();
-    Cube cube = new Cube(robot.cubeInitial, robot.cubeGoal);
-    PickAndPlace run = new PickAndPlace(robot, cube);
 
     @Test
     public void checkEndEffectorSe3() {

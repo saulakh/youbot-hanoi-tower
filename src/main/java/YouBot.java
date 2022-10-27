@@ -10,7 +10,6 @@ public class YouBot {
 
     final double DELTA_T = 0.01; // seconds
     final double MAX_SPEED = 15; // rad/s
-    final double PI = 3.14159265;
 
     // Chassis dimensions
     final double WHEEL_RADIUS = 0.0475; // meters
@@ -25,7 +24,7 @@ public class YouBot {
     double[][] F = Matrix.pseudoInverse(H);
 
     // Initial youBot configuration (phi,x,y,J1,J2,J3,J4,J5,W1,W2,W3,W4,gripper)
-    double[] initialConfig = new double[] {PI/6,-0.1,0.1,0,-0.2,0.2,-1.6,0,0,0,0,0,0};
+    double[] initialConfig = new double[] {Math.PI/6,-0.1,0.1,0,-0.2,0.2,-1.6,0,0,0,0,0,0};
     double[] currentConfig = initialConfig;
     double[] currentControls = new double[9]; // 5 joint speeds, 4 wheel speeds (rad/s)
 
@@ -35,14 +34,6 @@ public class YouBot {
     double[][] M0e = new double[][] {{1,0,0,0.033},{0,1,0,0},{0,0,1,0.6546},{0,0,0,1}};
     // BList: Screw axes for the five joints expressed in the end-effector frame
     double[][] BList = Matrix.transposeMatrix(new double[][] {{0,0,1,0,0.033,0},{0,-1,0,-0.5076,0,0},{0,-1,0,-0.3526,0,0},{0,-1,0,-0.2176,0,0},{0,0,1,0,0,0}});
-
-    // Initial and goal configurations of cube
-    //double[][] cubeInitial = new double[][] {{1,0,0,1},{0,1,0,0},{0,0,1,0.025},{0,0,0,1}};
-    //double[][] cubeGoal = new double[][] {{0,1,0,0},{-1,0,0,-1},{0,0,1,0.025},{0,0,0,1}};
-    double[][] cubeInitial = new double[][] {{1,0,0,0.75},{0,1,0,0},{0,0,1,0.15},{0,0,0,1}};
-    double[][] cubeGoal = new double[][] {{0,1,0,-0.75*Math.cos(Math.PI/3)},{-1,0,0,-0.75*Math.sin(Math.PI/3)},{0,0,1,0.025},{0,0,0,1}};
-    double[][] cube2Initial = new double[][] {{1,0,0,0.75},{0,1,0,-0.025},{0,0,1,0.10},{0,0,0,1}};
-    double[][] cube2Goal = new double[][] {{0,1,0,-0.75*Math.cos(Math.PI/3)},{-1,0,0,-0.75*Math.sin(Math.PI/3)},{0,0,1,0.025},{0,0,0,1}};
 
     // Kp and Ki gains
     int KpGain = 5;

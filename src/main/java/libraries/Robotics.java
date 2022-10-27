@@ -4,6 +4,46 @@ import java.util.Arrays;
 
 public class Robotics {
 
+    public static double[][] rotateAboutX(double[][] initialSe3, double theta) {
+        /*
+        Rotates an SE(3) position about the x-axis by theta radians
+         */
+        double[][] transMatrix = Matrix.identityMatrix(4);
+        double[][] rotX = {{1,0,0},{0, Math.cos(theta),-Math.sin(theta)},{0,Math.sin(theta),Math.cos(theta)}};
+        Matrix.replaceRangeFromMatrix(rotX, transMatrix, 0, 0);
+        return Matrix.matrixMultiplication(initialSe3, transMatrix);
+    }
+
+    public static double[][] rotateAboutY(double[][] initialSe3, double theta) {
+        /*
+        Rotates an SE(3) position about the y-axis by theta radians
+         */
+        double[][] transMatrix = Matrix.identityMatrix(4);
+        double[][] rotY = {{Math.cos(theta),0,Math.sin(theta)},{0,1,0},{-Math.sin(theta),0,Math.cos(theta)}};
+        Matrix.replaceRangeFromMatrix(rotY, transMatrix, 0, 0);
+        return Matrix.matrixMultiplication(initialSe3, transMatrix);
+    }
+
+    public static double[][] rotateAboutZ(double[][] initialSe3, double theta) {
+        /*
+        Rotates an SE(3) position about the z-axis by theta radians
+         */
+        double[][] transMatrix = Matrix.identityMatrix(4);
+        double[][] rotZ = {{Math.cos(theta),-Math.sin(theta),0},{Math.sin(theta),Math.cos(theta),0},{0,0,1}};
+        Matrix.replaceRangeFromMatrix(rotZ, transMatrix, 0, 0);
+        return Matrix.matrixMultiplication(initialSe3, transMatrix);
+    }
+
+    public static double[][] translate(double[][] initialSe3, double x, double y, double z) {
+        /*
+        Translates an SE(3) position in the x, y, and z directions, with its original orientation
+         */
+        initialSe3[0][3] += x;
+        initialSe3[1][3] += y;
+        initialSe3[2][3] += z;
+        return initialSe3;
+    }
+
     public static double[][] transToRot(double[][] se3Matrix) {
         /*
         Extracts the rotation matrix from a transformation matrix

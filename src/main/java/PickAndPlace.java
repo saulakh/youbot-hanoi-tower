@@ -12,7 +12,6 @@ public class PickAndPlace {
     public PickAndPlace(YouBot robot, Cube cube) {
         this.robot = robot;
         this.nextState = new NextState(robot.DELTA_T, robot.MAX_SPEED, robot.F);
-        //Cube cube = new Cube(robot.cubeInitial, robot.cubeGoal);
         this.trajectory = new TrajectoryGeneration(robot, cube);
         this.feedback = new FeedbackControl(robot);
         this.youBotPath = "youBot.csv";

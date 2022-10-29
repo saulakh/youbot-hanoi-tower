@@ -37,7 +37,7 @@ public class YouBot {
 
     // Kp and Ki gains
     int KpGain = 5;
-    int KiGain = 0;
+    int KiGain = 1;
     double[][] KpMatrix = Matrix.scalarMultiplication(Matrix.identityMatrix(6), KpGain);
     double[][] KiMatrix = Matrix.scalarMultiplication(Matrix.identityMatrix(6), KiGain);
     double[] errorIntegral = new double[6];

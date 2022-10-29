@@ -53,19 +53,19 @@ public class HanoiTower implements TaskList {
         // Move middle row to extra pad
         taskList.add(new Cube(positionMap.get("startMiddleLeft"), Robotics.rotateAboutZ(positionMap.get("padLeft"), padTheta)));
 
-        //taskList.add(new Cube(positionMap.get("startMiddleRight"), Robotics.rotateAboutZ(positionMap.get("padRight"), padTheta)));
+        taskList.add(new Cube(positionMap.get("startMiddleRight"), Robotics.rotateAboutZ(positionMap.get("padRight"), padTheta)));
         // Move top cube to extra pad
-        //taskList.add(new Cube(Robotics.rotateAboutZ(positionMap.get("goalBottomMiddle"), goalTheta), Robotics.rotateAboutZ(positionMap.get("padMiddle"), padTheta)));
+        taskList.add(new Cube(Robotics.rotateAboutZ(positionMap.get("goalBottomMiddle"), goalTheta), Robotics.rotateAboutZ(positionMap.get("padMiddle"), padTheta)));
         // Move bottom row to goal pad
-        //taskList.add(new Cube(positionMap.get("startBottomLeft"), Robotics.rotateAboutZ(positionMap.get("goalBottomLeft"), goalTheta)));
-        //taskList.add(new Cube(positionMap.get("startBottomMiddle"), Robotics.rotateAboutZ(positionMap.get("goalBottomMiddle"), goalTheta)));
-        //taskList.add(new Cube(positionMap.get("startBottomRight"), Robotics.rotateAboutZ(positionMap.get("goalBottomRight"), goalTheta)));
+        taskList.add(new Cube(positionMap.get("startBottomLeft"), Robotics.rotateAboutZ(positionMap.get("goalBottomLeft"), goalTheta)));
+        taskList.add(new Cube(positionMap.get("startBottomMiddle"), Robotics.rotateAboutZ(positionMap.get("goalBottomMiddle"), goalTheta)));
+        taskList.add(new Cube(positionMap.get("startBottomRight"), Robotics.rotateAboutZ(positionMap.get("goalBottomRight"), goalTheta)));
         // Move top cube to start pad
-        //taskList.add(new Cube(Robotics.rotateAboutZ(positionMap.get("padMiddle"), padTheta), positionMap.get("startBottomMiddle")));
+        taskList.add(new Cube(Robotics.rotateAboutZ(positionMap.get("padMiddle"), padTheta), positionMap.get("startBottomMiddle")));
         // Move remaining cubes to goal pad
-        //taskList.add(new Cube(Robotics.rotateAboutZ(positionMap.get("padLeft"), padTheta), Robotics.rotateAboutZ(positionMap.get("goalMiddleLeft"), goalTheta)));
-        //taskList.add(new Cube(Robotics.rotateAboutZ(positionMap.get("padRight"), padTheta), Robotics.rotateAboutZ(positionMap.get("goalMiddleRight"), goalTheta)));
-        //taskList.add(new Cube(positionMap.get("startBottomMiddle"), Robotics.rotateAboutZ(positionMap.get("goalTop"), goalTheta)));
+        taskList.add(new Cube(Robotics.rotateAboutZ(positionMap.get("padLeft"), padTheta), Robotics.rotateAboutZ(positionMap.get("goalMiddleLeft"), goalTheta)));
+        taskList.add(new Cube(Robotics.rotateAboutZ(positionMap.get("padRight"), padTheta), Robotics.rotateAboutZ(positionMap.get("goalMiddleRight"), goalTheta)));
+        taskList.add(new Cube(positionMap.get("startBottomMiddle"), Robotics.rotateAboutZ(positionMap.get("goalTop"), goalTheta)));
 
         return taskList;
     }

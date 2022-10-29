@@ -22,7 +22,6 @@ public class PickAndPlace {
      */
     public void getConfigsFromTrajectory() {
 
-        //CSV.clearCSVFile(youBotPath);
         double[][][] trajMatrix = trajectory.getTrajectoryMatrix();
 
         for (int row=0; row < trajMatrix.length - 1; row++) {

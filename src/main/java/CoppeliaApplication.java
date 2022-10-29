@@ -21,11 +21,12 @@ public class CoppeliaApplication {
     }
 
     public void processTaskList() {
+        YouBot youBot = new YouBot();
         List<Cube> taskList = new HanoiTower().getTaskList();
 
         for (Cube cube : taskList) {
             CSV.clearCSVFile(trajectoryPath);
-            PickAndPlace task = new PickAndPlace(new YouBot(), cube);
+            PickAndPlace task = new PickAndPlace(youBot, cube);
             task.getConfigsFromTrajectory();
         }
     }

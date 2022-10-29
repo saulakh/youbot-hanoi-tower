@@ -38,10 +38,11 @@ public class Robotics {
         /*
         Translates an SE(3) position in the x, y, and z directions, with its original orientation
          */
-        initialSe3[0][3] += x;
-        initialSe3[1][3] += y;
-        initialSe3[2][3] += z;
-        return initialSe3;
+        double[][] translate = Matrix.identityMatrix(4);
+        translate[0][3] += x;
+        translate[1][3] += y;
+        translate[2][3] += z;
+        return Matrix.matrixMultiplication(initialSe3, translate);
     }
 
     public static double[][] transToRot(double[][] se3Matrix) {

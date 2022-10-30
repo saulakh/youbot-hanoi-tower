@@ -87,7 +87,7 @@ public class FeedbackControl {
         List<Integer> constrainJoints = new ArrayList<>();
         double theta3 = currentConfig[5];
         double theta4 = currentConfig[6];
-        if (theta3 < -2 || theta3 > 2) {
+        if (theta3 < -2 || theta3 > -0.2) {
             constrainJoints.add(3);
         }
         if (theta4 < -2 || theta4 > 2) {

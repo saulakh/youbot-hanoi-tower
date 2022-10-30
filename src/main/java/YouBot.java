@@ -9,7 +9,7 @@ public class YouBot {
      */
 
     final double DELTA_T = 0.01; // seconds
-    final double MAX_SPEED = 15; // rad/s
+    final double MAX_SPEED = 25; // rad/s
 
     // Chassis dimensions
     final double WHEEL_RADIUS = 0.0475; // meters
@@ -24,7 +24,7 @@ public class YouBot {
     double[][] F = Matrix.pseudoInverse(H);
 
     // Initial youBot configuration (phi,x,y,J1,J2,J3,J4,J5,W1,W2,W3,W4,gripper)
-    double[] initialConfig = new double[] {Math.PI/6,-0.1,0.1,0,-0.2,0.2,-1.6,0,0,0,0,0,0};
+    double[] initialConfig = new double[] {0,-0.1,0.1,0,-0.2,0.2,-1.6,0,0,0,0,0,0};
     double[] currentConfig = initialConfig;
     double[] currentControls = new double[9]; // 5 joint speeds, 4 wheel speeds (rad/s)
 

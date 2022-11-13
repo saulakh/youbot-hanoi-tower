@@ -4,7 +4,7 @@ import libraries.Robotics;
 
 import java.util.List;
 
-public class PickAndPlace {
+public class PickAndPlace implements Job {
 
     private final List<Task> taskList;
     private final double theta;
@@ -47,7 +47,7 @@ public class PickAndPlace {
      * @param cubeInitial SE(3) representation of initial cube position
      * @param cubeGoal SE(3) representation of goal cube position
      */
-    public void addToTaskList(double[][] cubeInitial, double[][] cubeGoal) {
+    public List<Task> addToTaskList(double[][] cubeInitial, double[][] cubeGoal) {
 
         int gripState = 0;
         int gripperTime = 1;
@@ -86,5 +86,18 @@ public class PickAndPlace {
 
         // Update robot's position for path planning (before robot config updates)
         currentPosition = standoffFinal;
+
+        return taskList;
+    }
+
+    /**
+     * Moves a cube from the start to the goal pad
+     * @return taskList : Sequence of tasks for one pick and place job
+     */
+    @Override
+    public List<Task> getTaskList() {
+        double[][] cubeInitial = new double[][] {{1,0,0,1},{0,1,0,0},{0,0,1,0.025},{0,0,0,1}};
+        double[][] cubeGoal = new double[][] {{0,1,0,0},{-1,0,0,-1},{0,0,1,0.025},{0,0,0,1}};
+        return addToTaskList(cubeInitial, cubeGoal);
     }
 }

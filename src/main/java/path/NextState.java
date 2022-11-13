@@ -137,9 +137,6 @@ public class NextState {
      * @param maxSpeed maximum angular speed for the arm joints and wheels
      */
     private void limitSpeeds(double[] controls, double maxSpeed) {
-        /*
-        Limits the maximum angular speed for arm joints and wheels, and returns the updated 9-vector of controls
-         */
         for (int i=0; i < controls.length; i++) {
             if (controls[i] > maxSpeed) {
                 controls[i] = maxSpeed;

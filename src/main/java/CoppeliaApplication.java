@@ -11,7 +11,6 @@ import java.util.List;
 public class CoppeliaApplication {
 
     private final YouBot robot;
-    private final Job hanoiTower;
     private final NextState nextState;
     private final TrajectoryGeneration trajectory;
     private final FeedbackControl feedback;
@@ -22,14 +21,18 @@ public class CoppeliaApplication {
     public static void main(String[] args) {
 
         CoppeliaApplication main = new CoppeliaApplication();
-
         CSV.clearCSVFile(main.youBotPath);
-        main.processTaskList(main.hanoiTower);
+
+        // Options for robot taskList
+        Job pickAndPlace = new PickAndPlace(main.robot, main.taskList);
+        Job hanoiTower = new HanoiTower(main.robot);
+
+        // Process pickAndPlace or hanoiTower
+        main.processTaskList(hanoiTower);
     }
 
     public CoppeliaApplication() {
         this.robot = new YouBot();
-        this.hanoiTower = new HanoiTower(robot);
         this.nextState = new NextState(robot.DELTA_T, robot.MAX_SPEED, robot.F);
         this.trajectory = new TrajectoryGeneration(robot);
         this.feedback = new FeedbackControl(robot);

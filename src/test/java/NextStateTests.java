@@ -1,5 +1,8 @@
+import model.YouBot;
 import org.junit.Assert;
 import org.junit.Test;
+import path.NextState;
+import util.CSV;
 
 public class NextStateTests {
 
@@ -18,9 +21,8 @@ public class NextStateTests {
 
     @Test
     public void checkNextStateCSV() {
-        YouBot robot =  new YouBot();
         String nextStateCSVPath = "nextState.csv";
-        double[] config = robot.initialConfig;
+        double[] config = {Math.PI/6,-0.1,0.1,0,-0.2,0.2,-1.6,0,0,0,0,0,0};
         double[] controls = new double[] {0.5,0.5,0.5,0.5,0.5,10,10,10,10};
 
         CSV.clearCSVFile(nextStateCSVPath);

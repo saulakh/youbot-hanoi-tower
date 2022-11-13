@@ -45,6 +45,14 @@ public class Robotics {
         return Matrix.matrixMultiplication(initialSe3, translate);
     }
 
+    public static double[][] getTransformationMatrix(double thetaX, double thetaY, double thetaZ, double x, double y, double z) {
+        double[][] T = Matrix.identityMatrix(4);
+        T = rotateAboutX(T, thetaX);
+        T = rotateAboutY(T, thetaY);
+        T = rotateAboutZ(T, thetaZ);
+        return translate(T, x, y, z);
+    }
+
     public static double[][] transToRot(double[][] se3Matrix) {
         /*
         Extracts the rotation matrix from a transformation matrix

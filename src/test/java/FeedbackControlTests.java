@@ -1,5 +1,7 @@
+import model.YouBot;
 import org.junit.Assert;
 import org.junit.Test;
+import path.FeedbackControl;
 
 public class FeedbackControlTests {
 
@@ -20,10 +22,10 @@ public class FeedbackControlTests {
 
     @Test
     public void checkFeedbackControl() {
-        // Expected value before recalculating controls:
-        // double[] expected = {0, -653.192, 1399.261, -746.069, 0, 157.244, 157.244, 157.244, 157.244};
-        // Updated value after recalculating controls:
-        double[] expected = {0, -15, 15, -15, 0, -15, -15, -15, -15};
+        // Without joint speed limits:
+        double[] expected = {0.0, -701.3796, 0.0, 701.3796, 0.0, -4113.8016, -4113.8016, -4113.8016, -4113.8016};
+        // Including joint speed limits:
+        //double[] expected = {0, -25, 0, 25, 0, -25, -25, -25, -25};
         double[] actual = feedback.getControls();
         Assert.assertArrayEquals(expected, actual, 0.001);
     }

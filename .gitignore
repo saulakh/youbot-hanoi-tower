@@ -1,6 +1,6 @@
-target/classes/*
+/target/
 
 # Intellij
-.idea/
+/.idea/
 *.iml
 *.iws

@@ -2,134 +2,42 @@ package path;
 
 import libraries.Matrix;
 import libraries.Robotics;
+import model.Task;
 import model.YouBot;
-import model.Cube;
-import util.CSV;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
 
 public class TrajectoryGeneration {
 
-    private final double[][] robotInitial;
-    private final Cube cube;
-    private final double[][] cubeInitial;
-    private final double[][] cubeGoal;
     private final double dT;
-    private final String trajectoryPath;
 
-    public TrajectoryGeneration(YouBot robot, Cube cube) {
-        this.robotInitial = robot.endEffectorSE3(robot.currentConfig);
-        this.cube = cube;
-        this.cubeInitial = cube.getInitialConfig();
-        this.cubeGoal = cube.getGoalConfig();
+    public TrajectoryGeneration(YouBot robot) {
         this.dT = robot.DELTA_T;
-        this.trajectoryPath = "trajectory.csv";
     }
 
     /**
-     * Appends flattened trajectory to CSV file
-     * @param xStart Starting end-effector configuration of the robot (SE3)
-     * @param xEnd Goal end-effector configuration of the robot (SE3)
-     * @param gripState Gripper state for this section of the trajectory (0 = open, 1 = closed)
-     * @param Tf total time of motion for this section (in seconds)
+     * Computes a trajectory of N SE(3) matrices using the cubic time-scaling method, and flattens each waypoint to
+     * (r11, r12, r13, r21, r22, r23, r31, r32, r33, px, py, pz, grip). Each of the N rows represents a configuration
+     * of the end-effector frame {e} relative to the space frame {s} at that instant in time.
+     * @param task Task containing the robot's initial and goal position, gripper state, and time of motion
+     * @return trajectoryOutput : N x 13 matrix containing the flattened trajectories at each time step
      */
-    private void addToTrajectory(double[][] xStart, double[][] xEnd, int gripState, int Tf) {
+    public double[][] getTrajectory(Task task) {
 
-        int N = (int)(Tf / dT);
-        double[][][] trajectory = Robotics.screwTrajectory(xStart, xEnd, Tf, N, 3);
+        int N = (int) (task.getTf() / dT);
+        double[][][] trajectorySE3 = Robotics.screwTrajectory(task.getRobotInitial(), task.getRobotGoal(), task.getTf(), N, 3);
 
-        // Extract rotation and position values from trajectory
-        for (double[][] se3 : trajectory) {
+        double[][] trajectoryOutput = new double[N][13];
+        int index = 0;
+
+        // Extract rotation and position values from trajectory Se(3)
+        for (double[][] se3 : trajectorySE3) {
             double[] rot = Matrix.flattenedMatrix(Robotics.transToRot(se3));
             double[] pos = Robotics.transToPos(se3);
             // End-effector config is [rot, pos, grip]
-            double[] config = new double[13];
-            Matrix.replaceRangeFromArray(rot, config, 0);
-            Matrix.replaceRangeFromArray(pos, config, 9);
-            config[12] = gripState;
-            CSV.writeToCSV(trajectoryPath, config);
+            Matrix.replaceRangeFromArray(rot, trajectoryOutput[index], 0);
+            Matrix.replaceRangeFromArray(pos, trajectoryOutput[index], 9);
+            trajectoryOutput[index][12] = task.getGripState();
+            index++;
         }
-    }
-
-    /**
-     * Appends full trajectory to CSV file, moving the cube from the initial to goal position
-     * @return totalTime : Total time of motion (in seconds)
-     */
-    private int pickAndPlace() {
-
-        int gripState = 0;
-        int gripperTime = 1;
-        int moveToGraspTime = 1;
-        int moveToPositionTime = 5;
-        int totalTime = 0;
-
-        // 1) Move gripper to standoff configuration over initial cube location
-        double[][] standoffInitial = cube.getStandoffPosition(cubeInitial);
-        addToTrajectory(robotInitial, standoffInitial, gripState, moveToPositionTime);
-        totalTime += moveToPositionTime;
-
-        // 2) Move gripper down to initial grasp position
-        double[][] graspInitial = cube.getGraspPosition(cubeInitial);
-        addToTrajectory(standoffInitial, graspInitial, gripState, moveToGraspTime);
-        totalTime += moveToGraspTime;
-
-        // 3) Close gripper
-        gripState = 1;
-        addToTrajectory(graspInitial, graspInitial, gripState, gripperTime);
-        totalTime += gripperTime;
-
-        // 4) Move gripper back up to initial standoff configuration
-        addToTrajectory(graspInitial, standoffInitial, gripState, moveToGraspTime);
-        totalTime += moveToGraspTime;
-
-        // 5) Move gripper to standoff configuration over goal cube location
-        double[][] standoffFinal = cube.getStandoffPosition(cubeGoal);
-        addToTrajectory(standoffInitial, standoffFinal, gripState, moveToPositionTime);
-        totalTime += moveToPositionTime;
-
-        // 6) Move gripper down to final grasp position
-        double[][] graspFinal = cube.getGraspPosition(cubeGoal);
-        addToTrajectory(standoffFinal, graspFinal, gripState, moveToGraspTime);
-        totalTime += moveToGraspTime;
-
-        // 7) Open Gripper
-        gripState = 0;
-        addToTrajectory(graspFinal, graspFinal, gripState, gripperTime);
-        totalTime += gripperTime;
-
-        // 8) Move gripper back to final standoff configuration
-        addToTrajectory(graspFinal, standoffFinal, gripState, moveToGraspTime);
-        totalTime += moveToGraspTime;
-
-        return totalTime;
-    }
-
-    /**
-     * Returns a matrix from the trajectory CSV file
-     * @return trajectoryMatrix : matrix with flattened trajectories at each time step.
-     * Each trajectory represents the (SE3) end-effector configuration relative to the space frame
-     */
-    public double[][][] getTrajectoryMatrix() {
-
-        CSV.clearCSVFile(trajectoryPath);
-        File trajectoryFile = new File(trajectoryPath);
-
-        int timeOfMotion = pickAndPlace();
-        int timeSteps = (int)(timeOfMotion / dT);
-        double[][][] trajectoryMatrix = new double[timeSteps][1][13];
-        int index = 0;
-
-        try(Scanner csvReader = new Scanner(trajectoryFile)) {
-            while (csvReader.hasNextLine()) {
-                trajectoryMatrix[index][0] = CSV.convertStringToDoubleArray(csvReader.nextLine().split(","));
-                index++;
-            }
-        }
-        catch (FileNotFoundException e) {
-            System.out.println("Cannot open or read file.");
-        }
-        return trajectoryMatrix;
+        return trajectoryOutput;
     }
 }

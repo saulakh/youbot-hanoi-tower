@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface Job {
 
-    List<Cube> getTaskList();
+    List<Task> getTaskList();
 }

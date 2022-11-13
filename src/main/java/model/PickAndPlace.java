@@ -1,65 +1,90 @@
 package model;
 
-import libraries.Matrix;
-import path.FeedbackControl;
-import path.NextState;
-import path.TrajectoryGeneration;
-import util.CSV;
+import libraries.Robotics;
+
+import java.util.List;
 
 public class PickAndPlace {
 
-    private final YouBot robot;
-    private final NextState nextState;
-    private final TrajectoryGeneration trajectory;
-    private final FeedbackControl feedback;
-    private final String youBotPath;
+    private final List<Task> taskList;
+    private final double theta;
+    private final double standoffHeight;
+    private final double graspHeight;
+    private double[][] currentPosition;
 
-    public PickAndPlace(YouBot robot, Cube cube) {
-        this.robot = robot;
-        this.nextState = new NextState(robot.DELTA_T, robot.MAX_SPEED, robot.F);
-        this.trajectory = new TrajectoryGeneration(robot, cube);
-        this.feedback = new FeedbackControl(robot);
-        this.youBotPath = "youBot.csv";
+    public PickAndPlace(YouBot robot, List<Task> taskList) {
+        this.taskList = taskList;
+        this.theta = 3 * Math.PI / 4;
+        this.standoffHeight = 0.075;
+        this.graspHeight = -0.0215;
+        this.currentPosition = robot.endEffectorSE3(robot.currentConfig);
     }
 
     /**
-     * Loops through end-effector trajectory, calculates controls for joints and wheels, and appends configs to youBot CSV
+     * Returns end-effector grasp configuration, rotated about y-axis from cube position
+     * @param cubeConfig SE(3) representation of cube position
+     * @return SE(3) representation of grasp position for end-effector, oriented to grasp cube from above
      */
-    public void getConfigsFromTrajectory() {
-
-        double[][][] trajMatrix = trajectory.getTrajectoryMatrix();
-
-        for (int row=0; row < trajMatrix.length - 1; row++) {
-            robot.Xd = trajectoryToSE3(trajMatrix[row][0]);
-            robot.XdNext = trajectoryToSE3(trajMatrix[row+1][0]);
-
-            // Get controls needed for path.NextState
-            robot.currentControls = feedback.getControls();
-
-            // Get next configuration and append to youBot CSV file
-            Matrix.replaceRangeFromArray(nextState.getNextState(robot.currentConfig, robot.currentControls), robot.currentConfig, 0);
-            robot.currentConfig[12] = trajMatrix[row][0][12];
-            CSV.writeToCSV(youBotPath, robot.currentConfig);
-
-            // Set next configuration as X for next iteration
-            robot.X = robot.endEffectorSE3(robot.currentConfig);
-        }
+    public double[][] getGraspPosition(double[][] cubeConfig) {
+        double[][] newConfig = Robotics.rotateAboutY(cubeConfig, theta);
+        newConfig[2][3] += graspHeight;
+        return newConfig;
     }
 
     /**
-     * Returns SE(3) transformation matrix from flattened trajectory
-     * @param flattenedTrajectory Flattened SE(3) matrix representing the end-effector position in the world frame
-     * @return SE(3) transformation matrix representing the same end-effector position
+     * Returns the end-effector standoff configuration, relative to cube position
+     * @param cubeConfig SE(3) representation of cube position
+     * @return SE(3) representation of standoff position for end-effector before lowering down to grasp cube
      */
-    public double[][] trajectoryToSE3(double[] flattenedTrajectory) {
+    public double[][] getStandoffPosition(double[][] cubeConfig) {
+        double[][] newConfig = Robotics.rotateAboutY(cubeConfig, theta);
+        newConfig[2][3] += standoffHeight;
+        return newConfig;
+    }
 
-        double[] rot = Matrix.rangeFromArray(flattenedTrajectory, 0, 9);
-        double[][] rotMatrix = Matrix.reshapeArray(rot, 3, 3);
-        double[] pos = Matrix.rangeFromArray(flattenedTrajectory, 9, 12);
+    /**
+     * Adds a series of tasks to the robot's current task list, moving the cube from the initial to the goal position
+     * @param cubeInitial SE(3) representation of initial cube position
+     * @param cubeGoal SE(3) representation of goal cube position
+     */
+    public void addToTaskList(double[][] cubeInitial, double[][] cubeGoal) {
 
-        double[][] se3Matrix = Matrix.identityMatrix(4);
-        Matrix.replaceRangeFromMatrix(rotMatrix, se3Matrix, 0, 0);
-        Matrix.replaceRangeFromMatrix(Matrix.transposeArray(pos), se3Matrix, 0, 3);
-        return se3Matrix;
+        int gripState = 0;
+        int gripperTime = 1;
+        int moveToGraspTime = 1;
+        int moveToPositionTime = 5;
+
+        // 1) Move gripper to standoff configuration over initial cube location
+        double[][] standoffInitial = getStandoffPosition(cubeInitial);
+        taskList.add(new Task(currentPosition, standoffInitial, gripState, moveToPositionTime));
+
+        // 2) Move gripper down to initial grasp position
+        double[][] graspInitial = getGraspPosition(cubeInitial);
+        taskList.add(new Task(standoffInitial, graspInitial, gripState, moveToGraspTime));
+
+        // 3) Close gripper
+        gripState = 1;
+        taskList.add(new Task(graspInitial, graspInitial, gripState, gripperTime));
+
+        // 4) Move gripper back up to initial standoff configuration
+        taskList.add(new Task(graspInitial, standoffInitial, gripState, moveToGraspTime));
+
+        // 5) Move gripper to standoff configuration over goal cube location
+        double[][] standoffFinal = getStandoffPosition(cubeGoal);
+        taskList.add(new Task(standoffInitial, standoffFinal, gripState, moveToPositionTime));
+
+        // 6) Move gripper down to final grasp position
+        double[][] graspFinal = getGraspPosition(cubeGoal);
+        taskList.add(new Task(standoffFinal, graspFinal, gripState, moveToGraspTime));
+
+        // 7) Open Gripper
+        gripState = 0;
+        taskList.add(new Task(graspFinal, graspFinal, gripState, gripperTime));
+
+        // 8) Move gripper back to final standoff configuration
+        taskList.add(new Task(graspFinal, standoffFinal, gripState, moveToGraspTime));
+
+        // Update robot's position for path planning (before robot config updates)
+        currentPosition = standoffFinal;
     }
 }

@@ -79,6 +79,6 @@ The CoppeliaSim Robotics Simulator can be downloaded [here](https://www.coppelia
 The simulation can be played by loading the `youBot_HanoiTower.ttt` scene and providing the absolute path of the youBot.csv file in CoppeliaSim.
 
 ##### Switching between the Pick and Place or Hanoi Tower options:
--  Update line 31 in `CoppeliaApplication.java` to the corresponding Job option: `main.processTaskList(hanoiTower);` or `main.processTaskList(pickAndPlace);`
+-  Update line 40 in `CoppeliaApplication.java` to the corresponding Job option: `main.processTaskList(hanoiTower);` or `main.processTaskList(pickAndPlace);`
 -  Run CoppeliaApplication to generate the .csv file
 -  Load the corresponding scene from the coppelia folder, and provide the absolute path for youBot.csv in CoppeliaSim

@@ -331,7 +331,7 @@ public class Robotics {
      * @param t The current time t satisfying 0 < t < Tf
      * @return The path parameter s(t) corresponding to a third-order polynomial motion that begins and ends at zero velocity
      */
-    public static double cubicTimeScaling(int Tf, double t) {
+    public static double cubicTimeScaling(double Tf, double t) {
         return 3 * Math.pow(t / Tf, 2) - 2 * Math.pow(t / Tf, 3);
     }
 
@@ -341,7 +341,7 @@ public class Robotics {
      * @param t The current time t satisfying 0 < t < Tf
      * @return The path parameter s(t) corresponding to a fifth-order polynomial motion that begins and ends at zero velocity and zero acceleration
      */
-    public static double quinticTimeScaling(int Tf, double t) {
+    public static double quinticTimeScaling(double Tf, double t) {
         return 10 * Math.pow(t / Tf, 3) - 15 * Math.pow(t / Tf, 4) + 6 * Math.pow(t / Tf, 5);
     }
 
@@ -354,7 +354,7 @@ public class Robotics {
      * @param method The time-scaling method, where 3 indicates cubic (third-order polynomial) time scaling, and 5 indicates quintic (fifth-order polynomial) time scaling
      * @return The discretized trajectory as a list of N matrices in SE(3) separated in time by Tf/(N-1). The first in the list is xStart and the Nth is xEnd.
      */
-    public static double[][][] screwTrajectory(double[][] xStart, double[][] xEnd, int Tf, int N, int method) {
+    public static double[][][] screwTrajectory(double[][] xStart, double[][] xEnd, double Tf, int N, int method) {
         double timeGap = Tf / (N - 1.0);
         double[][][] trajectory = new double[N][4][4];
         double s;

@@ -13,9 +13,9 @@ public class HanoiTower implements Job {
     private final Map<String, double[][]> positionMap;
     private List<Task> taskList;
 
-    private final double[][] startPad = {{1,0,0,0.75},{0,1,0,0},{0,0,1,0.06},{0,0,0,1}};
-    private final double[][] goalPad = {{0,1,0,-0.75*Math.sin(Math.PI/6)},{-1,0,0,-0.75*Math.cos(Math.PI/6)},{0,0,1,0.06},{0,0,0,1}};
-    private final double[][] extraPad = {{0,1,0,-0.75*Math.sin(Math.PI/6)},{-1,0,0,0.75*Math.cos(Math.PI/6)},{0,0,1,0.06},{0,0,0,1}};
+    private final double[][] startPad = {{1,0,0,0.75},{0,1,0,0},{0,0,1,0.05},{0,0,0,1}};
+    private double[][] goalPad = {{1,0,0,-0.75*Math.sin(Math.PI/6)},{0,1,0,-0.75*Math.cos(Math.PI/6)},{0,0,1,0.05},{0,0,0,1}};
+    private double[][] extraPad = {{1,0,0,-0.75*Math.sin(Math.PI/6)},{0,1,0,0.75*Math.cos(Math.PI/6)},{0,0,1,0.05},{0,0,0,1}};
 
     public HanoiTower(YouBot robot) {
         this.robot = robot;
@@ -29,24 +29,33 @@ public class HanoiTower implements Job {
      */
     private Map<String, double[][]> loadCubePositions() {
         Map<String, double[][]> positionMap = new TreeMap<>();
+        double cubeSize = 0.05;
+        double middleShift = 0.04;
+        double bottomShift = 0.08;
+        double goalTheta = -2 * Math.PI / 3;
+        double padTheta = 2 * Math.PI / 3;
+
+        goalPad = Robotics.rotateAboutZ(goalPad, goalTheta);
+        extraPad = Robotics.rotateAboutZ(extraPad, padTheta);
+
         // Start Pad
-        positionMap.put("startBottomLeft", Robotics.translate(startPad, 0, 0.06667, 0));
+        positionMap.put("startBottomLeft", Robotics.translate(startPad, 0, bottomShift, 0));
         positionMap.put("startBottomMiddle", startPad);
-        positionMap.put("startBottomRight", Robotics.translate(startPad, 0, -0.06667, 0));
-        positionMap.put("startMiddleLeft", Robotics.translate(startPad, 0, 0.04167, 0.05));
-        positionMap.put("startMiddleRight", Robotics.translate(startPad, 0, -0.04167, 0.05));
-        positionMap.put("startTop", Robotics.translate(startPad, 0, 0, 0.10));
+        positionMap.put("startBottomRight", Robotics.translate(startPad, 0, -bottomShift, 0));
+        positionMap.put("startMiddleLeft", Robotics.translate(startPad, 0, middleShift, cubeSize));
+        positionMap.put("startMiddleRight", Robotics.translate(startPad, 0, -middleShift, cubeSize));
+        positionMap.put("startTop", Robotics.translate(startPad, 0, 0, cubeSize * 2));
         // Extra Pad
-        positionMap.put("padLeft", Robotics.translate(extraPad, 0.04167*Math.cos(Math.PI/3), -0.04167*Math.sin(Math.PI/3), 0));
-        positionMap.put("padMiddle", Robotics.translate(extraPad, 0, 0, 0.05));
-        positionMap.put("padRight", Robotics.translate(extraPad, -0.04167*Math.cos(Math.PI/3), 0.04167*Math.sin(Math.PI/3), 0));
+        positionMap.put("padLeft", Robotics.translate(extraPad, 0, middleShift, 0));
+        positionMap.put("padMiddle", Robotics.translate(extraPad, 0, 0, cubeSize));
+        positionMap.put("padRight", Robotics.translate(extraPad, 0, -middleShift, 0));
         // Goal Pad
-        positionMap.put("goalBottomLeft", Robotics.translate(goalPad, 0.06667*Math.cos(Math.PI/3), 0.06667*Math.sin(Math.PI/3), 0));
+        positionMap.put("goalBottomLeft", Robotics.translate(goalPad, 0, bottomShift, 0));
         positionMap.put("goalBottomMiddle", goalPad);
-        positionMap.put("goalBottomRight", Robotics.translate(goalPad, -0.06667*Math.cos(Math.PI/3), -0.06667*Math.sin(Math.PI/3), 0));
-        positionMap.put("goalMiddleLeft", Robotics.translate(goalPad, 0.04167*Math.cos(Math.PI/3), 0.04167*Math.sin(Math.PI/3), 0.05));
-        positionMap.put("goalMiddleRight", Robotics.translate(goalPad, -0.04167*Math.cos(Math.PI/3), -0.04167*Math.sin(Math.PI/3), 0.05));
-        positionMap.put("goalTop", Robotics.translate(goalPad, 0, 0, 0.10));
+        positionMap.put("goalBottomRight", Robotics.translate(goalPad, 0, -bottomShift, 0));
+        positionMap.put("goalMiddleLeft", Robotics.translate(goalPad, 0, middleShift, cubeSize));
+        positionMap.put("goalMiddleRight", Robotics.translate(goalPad, 0, -middleShift, cubeSize));
+        positionMap.put("goalTop", Robotics.translate(goalPad, 0, 0, cubeSize * 2));
         return positionMap;
     }
 
@@ -58,30 +67,32 @@ public class HanoiTower implements Job {
     private List<Task> loadTaskList() {
         taskList = new ArrayList<>();
         PickAndPlace pickAndPlace = new PickAndPlace(robot, taskList);
-        double goalTheta = -Math.PI / 6;
-        double padTheta = -5 * Math.PI / 6;
 
         // Move top cube to goal pad
-        pickAndPlace.addToTaskList(positionMap.get("startTop"), Robotics.rotateAboutZ(positionMap.get("goalBottomMiddle"), goalTheta));
+        pickAndPlace.addToTaskList(positionMap.get("startTop"), positionMap.get("goalBottomMiddle"));
         // Move middle row to extra pad
-        pickAndPlace.addToTaskList(positionMap.get("startMiddleLeft"), Robotics.rotateAboutZ(positionMap.get("padLeft"), padTheta));
-        pickAndPlace.addToTaskList(positionMap.get("startMiddleRight"), Robotics.rotateAboutZ(positionMap.get("padRight"), padTheta));
+        pickAndPlace.addToTaskList(positionMap.get("startMiddleLeft"), positionMap.get("padLeft"));
+        pickAndPlace.addToTaskList(positionMap.get("startMiddleRight"), positionMap.get("padRight"));
         // Move top cube to extra pad
-        pickAndPlace.addToTaskList(Robotics.rotateAboutZ(positionMap.get("goalBottomMiddle"), goalTheta), Robotics.rotateAboutZ(positionMap.get("padMiddle"), padTheta));
+        pickAndPlace.addToTaskList(positionMap.get("goalBottomMiddle"), positionMap.get("padMiddle"));
         // Move bottom row to goal pad
-        pickAndPlace.addToTaskList(positionMap.get("startBottomLeft"), Robotics.rotateAboutZ(positionMap.get("goalBottomLeft"), goalTheta));
-        pickAndPlace.addToTaskList(positionMap.get("startBottomMiddle"), Robotics.rotateAboutZ(positionMap.get("goalBottomMiddle"), goalTheta));
-        pickAndPlace.addToTaskList(positionMap.get("startBottomRight"), Robotics.rotateAboutZ(positionMap.get("goalBottomRight"), goalTheta));
+        pickAndPlace.addToTaskList(positionMap.get("startBottomLeft"), positionMap.get("goalBottomLeft"));
+        pickAndPlace.addToTaskList(positionMap.get("startBottomMiddle"), positionMap.get("goalBottomMiddle"));
+        pickAndPlace.addToTaskList(positionMap.get("startBottomRight"), positionMap.get("goalBottomRight"));
         // Move top cube to start pad
-        pickAndPlace.addToTaskList(Robotics.rotateAboutZ(positionMap.get("padMiddle"), padTheta), positionMap.get("startBottomMiddle"));
+        pickAndPlace.addToTaskList(positionMap.get("padMiddle"), positionMap.get("startBottomMiddle"));
         // Move remaining cubes to goal pad
-        pickAndPlace.addToTaskList(Robotics.rotateAboutZ(positionMap.get("padLeft"), padTheta), Robotics.rotateAboutZ(positionMap.get("goalMiddleLeft"), goalTheta));
-        pickAndPlace.addToTaskList(Robotics.rotateAboutZ(positionMap.get("padRight"), padTheta), Robotics.rotateAboutZ(positionMap.get("goalMiddleRight"), goalTheta));
-        pickAndPlace.addToTaskList(positionMap.get("startBottomMiddle"), Robotics.rotateAboutZ(positionMap.get("goalTop"), goalTheta));
+        pickAndPlace.addToTaskList(positionMap.get("padLeft"), positionMap.get("goalMiddleLeft"));
+        pickAndPlace.addToTaskList(positionMap.get("padRight"), positionMap.get("goalMiddleRight"));
+        pickAndPlace.addToTaskList(positionMap.get("startBottomMiddle"), positionMap.get("goalTop"));
 
         return taskList;
     }
 
+    /**
+     * Moves the tower of cubes from the start to the goal pad
+     * @return taskList : Sequence of tasks for pick and place jobs for each cube
+     */
     @Override
     public List<Task> getTaskList() {
         return loadTaskList();

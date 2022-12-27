@@ -2,7 +2,7 @@
 
 ### Project Overview
 
-The goal of this project was to program the KUKA youBot to move a tower of cubes using Java and CoppeliaSim. This was an extention of the Modern Robotics capstone project, which included using odometry for the robot's next configuration, designing a trajectory for the end-effector of the youBot, and incorporating feedback control for the youBot to pick up a cube and place it in a new location. The description of the original Modern Robotics capstone project can be found [here](http://hades.mech.northwestern.edu/index.php/Mobile_Manipulation_Capstone).
+The goal of this project was to program the KUKA youBot to move a tower of cubes using Java and CoppeliaSim. This was an extension of the Modern Robotics capstone project, which included using odometry for the robot's next configuration, designing a trajectory for the end-effector of the youBot, and incorporating feedback control for the youBot to pick up a cube and place it in a new location. The description of the original Modern Robotics capstone project can be found [here](http://hades.mech.northwestern.edu/index.php/Mobile_Manipulation_Capstone).
 
 Instead of using the Modern Robotics library, I wrote two libraries of my own to gain a more thorough understanding of linear algebra, spatial motion, kinematics, dynamics, path planning, and control of mobile robots. The matrix library contains methods for multidimensional arrays, such as matrix multiplication or the pseudoinverse. The robotics library contains various methods based on screw theory and the product of exponentials approach. Most of these equations used can be found in Chapter 13 of the Modern Robotics [textbook](http://hades.mech.northwestern.edu/images/2/25/MR-v2.pdf).
 
@@ -66,7 +66,7 @@ The second milestone for this project was programming the youBot to move a tower
 
 I structured the PickAndPlace as a list of tasks, and organized the Hanoi Tower job as a series of PickAndPlace jobs to move each cube in the Hanoi Tower. I am still refining this section, but the youBot is able to move the cubes from the start pad to the goal pad.
 
-The way I calculated the controls had a huge impact in this milestone, specifically with how I calculated the pseudo inverse of the Jacobian matrix. If the Jacobian matrix became singular or nearly singular, the pseudo inverse method generated unreasonable speeds and prevented the controller from finding a possible solution. I will continue updating my approach as I learn more, and plan to try implementing a weighted pseudo inverse next. Hopefully this will also help the youBot drive its base more effectively, instead of straightening out the arm first.
+The way I calculated the controls had a huge impact in this milestone, specifically with how I calculated the pseudo inverse of the Jacobian matrix. If the Jacobian matrix became singular or nearly singular, the pseudo inverse method generated unreasonable speeds and prevented the controller from finding a possible solution. I will continue updating my approach as I learn more, and plan to try implementing a tolerance and/or weighted pseudo inverse later to hopefully drive the youBot more effectively.
 
 ### Project Build Instructions
 
@@ -79,6 +79,6 @@ The CoppeliaSim Robotics Simulator can be downloaded [here](https://www.coppelia
 The simulation can be played by loading the `youBot_HanoiTower.ttt` scene and providing the absolute path of the youBot.csv file in CoppeliaSim.
 
 ##### Switching between the Pick and Place or Hanoi Tower options:
--  Update line 31 in `CoppeliaApplication.java` to the corresponding Job option
+-  Update line 31 in `CoppeliaApplication.java` to the corresponding Job option: `main.processTaskList(hanoiTower);` or `main.processTaskList(pickAndPlace);`
 -  Run CoppeliaApplication to generate the .csv file
 -  Load the corresponding scene from the coppelia folder, and provide the absolute path for youBot.csv in CoppeliaSim

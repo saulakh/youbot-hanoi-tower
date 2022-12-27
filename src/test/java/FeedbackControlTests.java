@@ -3,6 +3,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import path.FeedbackControl;
 
+import java.util.Arrays;
+
 public class FeedbackControlTests {
 
     YouBot robot = new YouBot();
@@ -27,7 +29,7 @@ public class FeedbackControlTests {
         // Including joint speed limits:
         //double[] expected = {0, -25, 0, 25, 0, -25, -25, -25, -25};
         double[] actual = feedback.getControls();
-        Assert.assertArrayEquals(expected, actual, 0.001);
+        Assert.assertArrayEquals(expected, actual, 0.01);
     }
 
     public void checkMatrixWithDelta(double[][] expected, double[][] actual, double delta) {

@@ -50,9 +50,9 @@ public class PickAndPlace implements Job {
     public List<Task> addToTaskList(double[][] cubeInitial, double[][] cubeGoal) {
 
         int gripState = 0;
-        int gripperTime = 1;
-        int moveToGraspTime = 1;
-        int moveToPositionTime = 5;
+        double gripperTime = 0.75;
+        double moveToGraspTime = 1;
+        double moveToPositionTime = 6.5;
 
         // 1) Move gripper to standoff configuration over initial cube location
         double[][] standoffInitial = getStandoffPosition(cubeInitial);

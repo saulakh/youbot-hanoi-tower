@@ -38,8 +38,8 @@ public class YouBot {
     public double[][] BList = Matrix.transposeMatrix(new double[][] {{0,0,1,0,0.033,0},{0,-1,0,-0.5076,0,0},{0,-1,0,-0.3526,0,0},{0,-1,0,-0.2176,0,0},{0,0,1,0,0,0}});
 
     // Kp and Ki gains
-    public int KpGain = 5;
-    public int KiGain = 1;
+    public double KpGain = 10;
+    public double KiGain = 8;
     public double[][] KpMatrix = Matrix.scalarMultiplication(Matrix.identityMatrix(6), KpGain);
     public double[][] KiMatrix = Matrix.scalarMultiplication(Matrix.identityMatrix(6), KiGain);
     public double[] errorIntegral = new double[6];

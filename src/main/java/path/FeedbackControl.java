@@ -5,6 +5,7 @@ import libraries.Robotics;
 import model.YouBot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class FeedbackControl {
@@ -90,7 +91,7 @@ public class FeedbackControl {
         List<Integer> constrainJoints = new ArrayList<>();
         double theta3 = currentConfig[5];
         double theta4 = currentConfig[6];
-        if (theta3 < -2 || theta3 > -0.2) {
+        if (theta3 < -2 || theta3 > 2) {
             constrainJoints.add(3);
         }
         if (theta4 < -2 || theta4 > 2) {
@@ -138,7 +139,15 @@ public class FeedbackControl {
         double[][] KpError = Matrix.matrixMultiplication(robot.KpMatrix, Matrix.transposeArray(xErr));
         double[][] KiError = Matrix.matrixMultiplication(robot.KiMatrix, Matrix.transposeArray(robot.errorIntegral));
         double[] sumError = Matrix.arrayAddition(Matrix.flattenedMatrix(KpError), Matrix.flattenedMatrix(KiError));
-        return Matrix.arrayAddition(getFeedForwardTwist(), sumError);
+        double[] V = Matrix.arrayAddition(getFeedForwardTwist(), sumError);
+
+        if (Double.isNaN(V[0])) {
+            System.out.println("Error: Unable to complete path, due to NaN values in error integral.");
+            System.out.println("\nError Integral: " + Arrays.toString(xErr));
+            System.exit(1);
+        }
+
+        return V;
     }
 
     /**
@@ -165,7 +174,6 @@ public class FeedbackControl {
                 controls = Matrix.flattenedMatrix(controlsArray);
             }
         }
-        //nextState.getNextState(robot.currentConfig, controls);
         return controls;
     }
 }

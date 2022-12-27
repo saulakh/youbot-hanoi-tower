@@ -18,6 +18,15 @@ public class CoppeliaApplication {
     private List<Task> taskList;
     private final String youBotPath;
 
+    public CoppeliaApplication() {
+        this.robot = new YouBot();
+        this.nextState = new NextState(robot.DELTA_T, robot.MAX_SPEED, robot.F);
+        this.trajectory = new TrajectoryGeneration(robot);
+        this.feedback = new FeedbackControl(robot);
+        this.taskList = new ArrayList<>();
+        this.youBotPath = "youBot.csv";
+    }
+
     public static void main(String[] args) {
 
         CoppeliaApplication main = new CoppeliaApplication();
@@ -31,15 +40,6 @@ public class CoppeliaApplication {
         main.processTaskList(hanoiTower);
     }
 
-    public CoppeliaApplication() {
-        this.robot = new YouBot();
-        this.nextState = new NextState(robot.DELTA_T, robot.MAX_SPEED, robot.F);
-        this.trajectory = new TrajectoryGeneration(robot);
-        this.feedback = new FeedbackControl(robot);
-        this.taskList = new ArrayList<>();
-        this.youBotPath = "youBot.csv";
-    }
-
     /**
      * Processes each task of a Job. Loads the trajectory of SE(3) end-effector positions, calculates the controls
      * needed to reach each position, and adds the robot configurations to the output CSV file for each time step
@@ -48,6 +48,7 @@ public class CoppeliaApplication {
         taskList = job.getTaskList();
 
         for (Task task : taskList) {
+            task.setRobotInitial(robot.endEffectorSE3(robot.currentConfig));
             double[][] path = trajectory.getTrajectory(task);
 
             for (int row=0; row < path.length - 1; row++) {

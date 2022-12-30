@@ -91,7 +91,7 @@ public class FeedbackControl {
         List<Integer> constrainJoints = new ArrayList<>();
         double theta3 = currentConfig[5];
         double theta4 = currentConfig[6];
-        if (theta3 < -2 || theta3 > 2) {
+        if (theta3 < -2 || theta3 > -0.2) {
             constrainJoints.add(3);
         }
         if (theta4 < -2 || theta4 > 2) {
@@ -142,8 +142,8 @@ public class FeedbackControl {
         double[] V = Matrix.arrayAddition(getFeedForwardTwist(), sumError);
 
         if (Double.isNaN(V[0])) {
-            System.out.println("Error: Unable to complete path, due to NaN values in error integral.");
-            System.out.println("\nError Integral: " + Arrays.toString(xErr));
+            System.out.println("Error: Unable to complete path, due to NaN values in error twist.");
+            System.out.println("\nError Twist: " + Arrays.toString(xErr));
             System.exit(1);
         }
 

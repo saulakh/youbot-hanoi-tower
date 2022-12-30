@@ -301,7 +301,12 @@ public class Robotics {
         double[][] rot = transToRot(se3Matrix);
         double[][] omgMatrix = matrixLog3(rot);
         double[][] pos = Matrix.rangeFromMatrix(se3Matrix, 0, 3, 3, 4);
-        double theta = Math.acos((rot[0][0] + rot[1][1] + rot[2][2] - 1) / 2.0);
+
+        double acosInput = (rot[0][0] + rot[1][1] + rot[2][2] - 1) / 2.0;
+        if (acosInput < -1 || acosInput > 1) {
+            acosInput /= acosInput;
+        }
+        double theta = Math.acos(acosInput);
 
         if (Arrays.deepEquals(omgMatrix, new double[3][3])) {
             Matrix.replaceRangeFromMatrix(pos, output, 0, 3);
